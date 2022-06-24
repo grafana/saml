@@ -241,7 +241,6 @@ func TestIDPHTTPCanHandleSSORequest(t *testing.T) {
 		test.IDP.Handler().ServeHTTP(w, r)
 		assert.Check(t, is.Equal(http.StatusBadRequest, w.Code))
 	}
-
 }
 
 func TestIDPCanHandleRequestWithNewSession(t *testing.T) {
