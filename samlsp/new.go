@@ -14,17 +14,22 @@ import (
 
 // Options represents the parameters for creating a new middleware
 type Options struct {
-	EntityID          string
-	URL               url.URL
-	Key               *rsa.PrivateKey
-	Certificate       *x509.Certificate
-	Intermediates     []*x509.Certificate
-	AllowIDPInitiated bool
-	IDPMetadata       *saml.EntityDescriptor
-	SignRequest       bool
-	ForceAuthn        bool // TODO(ross): this should be *bool
-	CookieSameSite    http.SameSite
-	RelayStateFunc    func(w http.ResponseWriter, r *http.Request) string
+	EntityID              string
+	URL                   url.URL
+	Key                   *rsa.PrivateKey
+	Certificate           *x509.Certificate
+	Intermediates         []*x509.Certificate
+	HTTPClient            *http.Client
+	AllowIDPInitiated     bool
+	DefaultRedirectURI    string
+	IDPMetadata           *saml.EntityDescriptor
+	SignRequest           bool
+	UseArtifactResponse   bool
+	ForceAuthn            bool // TODO(ross): this should be *bool
+	RequestedAuthnContext *saml.RequestedAuthnContext
+	CookieSameSite        http.SameSite
+	RelayStateFunc        func(w http.ResponseWriter, r *http.Request) string
+	LogoutBindings        []string
 }
 
 // DefaultSessionCodec returns the default SessionCodec for the provided options,
@@ -94,18 +99,30 @@ func DefaultServiceProvider(opts Options) saml.ServiceProvider {
 		signatureMethod = ""
 	}
 
+	if opts.DefaultRedirectURI == "" {
+		opts.DefaultRedirectURI = "/"
+	}
+
+	if len(opts.LogoutBindings) == 0 {
+		opts.LogoutBindings = []string{saml.HTTPPostBinding}
+	}
+
 	return saml.ServiceProvider{
-		EntityID:          opts.EntityID,
-		Key:               opts.Key,
-		Certificate:       opts.Certificate,
-		Intermediates:     opts.Intermediates,
-		MetadataURL:       *metadataURL,
-		AcsURL:            *acsURL,
-		SloURL:            *sloURL,
-		IDPMetadata:       opts.IDPMetadata,
-		ForceAuthn:        forceAuthn,
-		SignatureMethod:   signatureMethod,
-		AllowIDPInitiated: opts.AllowIDPInitiated,
+		EntityID:              opts.EntityID,
+		Key:                   opts.Key,
+		Certificate:           opts.Certificate,
+		HTTPClient:            opts.HTTPClient,
+		Intermediates:         opts.Intermediates,
+		MetadataURL:           *metadataURL,
+		AcsURL:                *acsURL,
+		SloURL:                *sloURL,
+		IDPMetadata:           opts.IDPMetadata,
+		ForceAuthn:            forceAuthn,
+		RequestedAuthnContext: opts.RequestedAuthnContext,
+		SignatureMethod:       signatureMethod,
+		AllowIDPInitiated:     opts.AllowIDPInitiated,
+		DefaultRedirectURI:    opts.DefaultRedirectURI,
+		LogoutBindings:        opts.LogoutBindings,
 	}
 }
 
@@ -119,10 +136,14 @@ func New(opts Options) (*Middleware, error) {
 	m := &Middleware{
 		ServiceProvider: DefaultServiceProvider(opts),
 		Binding:         "",
+		ResponseBinding: saml.HTTPPostBinding,
 		OnError:         DefaultOnError,
 		Session:         DefaultSessionProvider(opts),
 	}
 	m.RequestTracker = DefaultRequestTracker(opts, &m.ServiceProvider)
+	if opts.UseArtifactResponse {
+		m.ResponseBinding = saml.HTTPArtifactBinding
+	}
 
 	return m, nil
 }
