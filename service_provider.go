@@ -259,17 +259,19 @@ func (req *AuthnRequest) Redirect(relayState string, sp *ServiceProvider) (*url.
 
 	rv, _ := url.Parse(req.Destination)
 	// We can't depend on Query().set() as order matters for signing
+	reqString := string(w.Bytes())
 	query := rv.RawQuery
 	if len(query) > 0 {
-		query += "&SAMLRequest=" + url.QueryEscape(string(w.Bytes()))
+		query += "&" + string(samlRequest) + "=" + url.QueryEscape(reqString)
 	} else {
-		query += "SAMLRequest=" + url.QueryEscape(string(w.Bytes()))
+		query += string(samlRequest) + "=" + url.QueryEscape(reqString)
 	}
 
 	if relayState != "" {
 		query += "&RelayState=" + relayState
 	}
 	if len(sp.SignatureMethod) > 0 {
+		sp.signQuery(samlRequest, query, reqString, relayState)
 		query += "&SigAlg=" + url.QueryEscape(sp.SignatureMethod)
 		signingContext, err := GetSigningContext(sp)
 
@@ -1484,7 +1486,7 @@ func (sp *ServiceProvider) nameIDFormat() string {
 // ValidateLogoutResponseRequest validates the LogoutResponse content from the request
 func (sp *ServiceProvider) ValidateLogoutResponseRequest(req *http.Request) error {
 	if data := req.URL.Query().Get("SAMLResponse"); data != "" {
-		return sp.ValidateLogoutResponseRedirect(data)
+		return sp.ValidateLogoutResponseRedirect(req.URL.Query())
 	}
 
 	err := req.ParseForm()
@@ -1529,7 +1531,8 @@ func (sp *ServiceProvider) ValidateLogoutResponseForm(postFormData string) error
 //
 // URL Binding appears to be gzip / flate encoded
 // See https://www.oasis-open.org/committees/download.php/20645/sstc-saml-tech-overview-2%200-draft-10.pdf  6.6
-func (sp *ServiceProvider) ValidateLogoutResponseRedirect(queryParameterData string) error {
+func (sp *ServiceProvider) ValidateLogoutResponseRedirect(query url.Values) error {
+	queryParameterData := query.Get("SAMLResponse")
 	rawResponseBuf, err := base64.StdEncoding.DecodeString(queryParameterData)
 	if err != nil {
 		return fmt.Errorf("unable to parse base64: %s", err)
@@ -1560,6 +1563,10 @@ func (sp *ServiceProvider) ValidateLogoutResponseRedirect(queryParameterData str
 	doc := etree.NewDocument()
 	if _, err := doc.ReadFrom(bytes.NewReader(gr)); err != nil {
 		return err
+	}
+
+	if query.Get("Signature") != "" && query.Get("SigAlg") != "" {
+		return sp.validateQuerySig(query)
 	}
 
 	responseEl := doc.Root()
