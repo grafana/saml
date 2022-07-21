@@ -271,19 +271,12 @@ func (req *AuthnRequest) Redirect(relayState string, sp *ServiceProvider) (*url.
 		query += "&RelayState=" + relayState
 	}
 	if len(sp.SignatureMethod) > 0 {
-		sp.signQuery(samlRequest, query, reqString, relayState)
-		query += "&SigAlg=" + url.QueryEscape(sp.SignatureMethod)
-		signingContext, err := GetSigningContext(sp)
-
-		if err != nil {
-			return nil, err
+		var errSig error
+		query, errSig = sp.signQuery(samlRequest, query, reqString, relayState)
+		if errSig != nil {
+			return nil, errSig
 		}
 
-		sig, err := signingContext.SignString(query)
-		if err != nil {
-			return nil, err
-		}
-		query += "&Signature=" + url.QueryEscape(base64.StdEncoding.EncodeToString(sig))
 	}
 
 	rv.RawQuery = query
