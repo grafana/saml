@@ -26,7 +26,7 @@ var (
 	// ErrInvalidQuerySignature is returned when the query signature is invalid
 	ErrInvalidQuerySignature = errors.New("invalid query signature")
 	// ErrNoQuerySignature is returned when the query does not contain a signature
-	ErrNoQuerySignature = errors.New("no query signature present")
+	ErrNoQuerySignature = errors.New("query Signature or SigAlg not found")
 )
 
 // Sign Query with the SP private key.
@@ -80,7 +80,9 @@ func (sp *ServiceProvider) validateQuerySig(query url.Values) error {
 		return fmt.Errorf("No SAMLResponse or SAMLRequest found in query")
 	}
 
-	// Encode Query as standard demands. query.Encode() is not standard compliant
+	// Encode Query as standard demands.
+	// query.Encode() is not standard compliant
+	// as query encoding order matters
 	res := respType + "=" + url.QueryEscape(query.Get(respType))
 
 	relayState := query.Get("RelayState")
@@ -93,7 +95,7 @@ func (sp *ServiceProvider) validateQuerySig(query url.Values) error {
 	// Signature is base64 encoded
 	sigBytes, err := base64.StdEncoding.DecodeString(sig)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to decode signature: %w", err)
 	}
 
 	var (
@@ -119,6 +121,8 @@ func (sp *ServiceProvider) validateQuerySig(query url.Values) error {
 		hashed = hashed1[:]
 		hashAlg = crypto.SHA1
 		sigAlg = x509.SHA1WithRSA
+	default:
+		return fmt.Errorf("unsupported signature algorithm: %s", alg)
 	}
 
 	// validate signature
