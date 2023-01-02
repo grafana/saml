@@ -622,6 +622,7 @@ func (sp *ServiceProvider) handleArtifactRequest(ctx context.Context, artifactID
 		retErr.PrivateErr = err
 		return nil, retErr
 	}
+	req.Header.Set("Content-Type", "text/xml")
 
 	httpClient := sp.HTTPClient
 	if httpClient == nil {
@@ -693,6 +694,10 @@ func (sp *ServiceProvider) ParseXMLArtifactResponse(soapResponseXML []byte, poss
 	doc := etree.NewDocument()
 	if err := doc.ReadFromBytes(soapResponseXML); err != nil {
 		retErr.PrivateErr = fmt.Errorf("cannot unmarshal response: %s", err)
+		return nil, retErr
+	}
+	if doc.Root() == nil {
+		retErr.PrivateErr = errors.New("invalid xml: no root")
 		return nil, retErr
 	}
 	if doc.Root().NamespaceURI() != "http://schemas.xmlsoap.org/soap/envelope/" ||
@@ -800,6 +805,10 @@ func (sp *ServiceProvider) ParseXMLResponse(decodedResponseXML []byte, possibleR
 	doc := etree.NewDocument()
 	if err := doc.ReadFromBytes(decodedResponseXML); err != nil {
 		retErr.PrivateErr = err
+		return nil, retErr
+	}
+	if doc.Root() == nil {
+		retErr.PrivateErr = errors.New("invalid xml: no root")
 		return nil, retErr
 	}
 
