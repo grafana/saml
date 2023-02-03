@@ -1547,7 +1547,7 @@ func (sp *ServiceProvider) ValidateLogoutResponseRedirect(query url.Values) erro
 	}
 
 	if err := sp.validateSignature(doc.Root()); err != nil {
-		if err != errSignatureElementNotPresent && !hasValidSignature {
+		if err != errSignatureElementNotPresent || !hasValidSignature {
 			retErr.PrivateErr = err
 			return retErr
 		}
