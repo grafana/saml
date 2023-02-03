@@ -1531,11 +1531,13 @@ func (sp *ServiceProvider) ValidateLogoutResponseRedirect(query url.Values) erro
 		return err
 	}
 
+	hasValidSignature := false
 	if query.Get("Signature") != "" && query.Get("SigAlg") != "" {
 		if err := sp.validateQuerySig(query); err != nil {
 			retErr.PrivateErr = err
 			return retErr
 		}
+		hasValidSignature = true
 	}
 
 	doc := etree.NewDocument()
@@ -1545,8 +1547,10 @@ func (sp *ServiceProvider) ValidateLogoutResponseRedirect(query url.Values) erro
 	}
 
 	if err := sp.validateSignature(doc.Root()); err != nil {
-		retErr.PrivateErr = err
-		return retErr
+		if err != errSignatureElementNotPresent && !hasValidSignature {
+			retErr.PrivateErr = err
+			return retErr
+		}
 	}
 
 	var resp LogoutResponse
