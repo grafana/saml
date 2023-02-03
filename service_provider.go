@@ -1539,7 +1539,7 @@ func (sp *ServiceProvider) ValidateLogoutResponseRedirect(query url.Values) erro
 	}
 
 	doc := etree.NewDocument()
-	if err := doc.ReadFromBytes(rawResponseBuf); err != nil {
+	if err := doc.ReadFromBytes(gr); err != nil {
 		retErr.PrivateErr = err
 		return retErr
 	}
