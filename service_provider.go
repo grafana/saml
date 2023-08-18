@@ -1662,7 +1662,6 @@ func elementToBytes(el *etree.Element) ([]byte, error) {
 	for currentElement != nil {
 		for _, attr := range currentElement.Attr {
 			if attr.Space == "xmlns" || attr.Key == "xmlns" {
-				fmt.Println("namespace, fuckers")
 				if _, prefixExists := namespaces[attr.FullKey()]; !prefixExists {
 					namespaces[attr.FullKey()] = attr.Value
 				}
