@@ -1673,18 +1673,25 @@ func findChild(parentEl *etree.Element, childNS string, childTag string) (*etree
 }
 
 func elementToBytes(el *etree.Element) ([]byte, error) {
+	// Retrieve namespaces from the element itself and its parents
 	namespaces := map[string]string{}
-	for _, childEl := range el.FindElements("//*") {
-		ns := childEl.NamespaceURI()
-		if ns != "" {
-			namespaces[childEl.Space] = ns
+	currentElement := el
+	for currentElement != nil {
+		for _, attr := range currentElement.Attr {
+			if attr.Space == "xmlns" || attr.Key == "xmlns" {
+				fmt.Println("namespace, fuckers")
+				if _, prefixExists := namespaces[attr.FullKey()]; !prefixExists {
+					namespaces[attr.FullKey()] = attr.Value
+				}
+			}
 		}
+		currentElement = currentElement.Parent()
 	}
 
 	doc := etree.NewDocument()
 	doc.SetRoot(el.Copy())
-	for space, uri := range namespaces {
-		doc.Root().CreateAttr("xmlns:"+space, uri)
+	for prefix, uri := range namespaces {
+		doc.Root().CreateAttr(prefix, uri)
 	}
 
 	return doc.WriteToBytes()
