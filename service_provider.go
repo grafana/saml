@@ -1656,12 +1656,15 @@ func findChild(parentEl *etree.Element, childNS string, childTag string) (*etree
 }
 
 func elementToBytes(el *etree.Element) ([]byte, error) {
-	// Retrieve namespaces from the element itself and its parents
 	namespaces := map[string]string{}
 	currentElement := el
+	// Retrieve namespaces from the element itself and its parents
 	for currentElement != nil {
+		// Iterate over the attributes of the element, if an attribute is a namespace declaration, add it to the list of namespaces
 		for _, attr := range currentElement.Attr {
+			// "xmlns" is either the space or the key of the attribute, depending on whether it is a default namespace declaration or not
 			if attr.Space == "xmlns" || attr.Key == "xmlns" {
+				// If the namespace is already preset in the list, it means that a child element has overriden it, so skip it
 				if _, prefixExists := namespaces[attr.FullKey()]; !prefixExists {
 					namespaces[attr.FullKey()] = attr.Value
 				}

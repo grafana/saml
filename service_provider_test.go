@@ -1851,3 +1851,28 @@ func TestMultipleAssertions(t *testing.T) {
 	assert.Check(t, err)
 	assert.Check(t, profile.Subject.NameID.Value != "admin@evil.com")
 }
+
+func TestResponseWithDefaultNamespace(t *testing.T) {
+	idpMetadata := golden.Get(t, "TestSPWithDefaultNamespace_idp_metadata")
+	respStr := golden.Get(t, "TestSPWithDefaultNamespace")
+	TimeNow = func() time.Time {
+		rv, _ := time.Parse("Mon Jan 2 15:04:05 MST 2006", "Fri Apr 21 13:12:51 UTC 2017")
+		return rv
+	}
+	Clock = dsig.NewFakeClockAt(TimeNow())
+	s := ServiceProvider{
+		Key:         mustParsePrivateKey(golden.Get(t, "key_2017.pem")).(*rsa.PrivateKey),
+		Certificate: mustParseCertificate(golden.Get(t, "cert_2017.pem")),
+		MetadataURL: mustParseURL("https://sp.example.com/saml2/metadata"),
+		AcsURL:      mustParseURL("https://sp.example.com/saml2/acs"),
+		IDPMetadata: &EntityDescriptor{},
+	}
+	err := xml.Unmarshal(idpMetadata, &s.IDPMetadata)
+	assert.NilError(t, err)
+
+	req := http.Request{PostForm: url.Values{}}
+	req.PostForm.Set("SAMLResponse", base64.StdEncoding.EncodeToString(respStr))
+	_, err = s.ParseResponse(&req, []string{"id-00020406080a0c0e10121416181a1c1e"})
+
+	assert.NilError(t, err)
+}
