@@ -139,7 +139,7 @@ type ContactPerson struct {
 // See http://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf §2.4.1
 type RoleDescriptor struct {
 	ID                         string        `xml:",attr,omitempty"`
-	ValidUntil                 *time.Time    `xml:"validUntil,attr,omitempty"`
+	ValidUntil                 time.Time     `xml:"validUntil,attr,omitempty"`
 	CacheDuration              time.Duration `xml:"cacheDuration,attr,omitempty"`
 	ProtocolSupportEnumeration string        `xml:"protocolSupportEnumeration,attr"`
 	ErrorURL                   string        `xml:"errorURL,attr,omitempty"`
@@ -148,6 +148,37 @@ type RoleDescriptor struct {
 	Organization               *Organization   `xml:"Organization,omitempty"`
 	ContactPeople              []ContactPerson `xml:"ContactPerson,omitempty"`
 }
+
+// func (m RoleDescriptor) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+// 	aux := &struct {
+// 		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
+// 		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
+// 		*RoleDescriptor
+// 	}{
+// 		ValidUntil:     RelaxedTime(m.ValidUntil),
+// 		CacheDuration:  Duration(m.CacheDuration),
+// 		RoleDescriptor: (*RoleDescriptor)(&m),
+// 	}
+// 	return e.Encode(aux)
+// }
+
+// // UnmarshalXML implements xml.Unmarshaler
+// func (m *RoleDescriptor) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+// 	type Alias RoleDescriptor
+// 	aux := &struct {
+// 		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
+// 		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
+// 		*Alias
+// 	}{
+// 		Alias: (*Alias)(m),
+// 	}
+// 	if err := d.DecodeElement(aux, &start); err != nil {
+// 		return err
+// 	}
+// 	// m.ValidUntil = time.Time(aux.ValidUntil)
+// 	m.CacheDuration = time.Duration(aux.CacheDuration)
+// 	return nil
+// }
 
 // KeyDescriptor represents the XMLSEC object of the same name
 type KeyDescriptor struct {
@@ -226,6 +257,38 @@ type IDPSSODescriptor struct {
 	Attributes                 []Attribute `xml:"Attribute"`
 }
 
+func (m IDPSSODescriptor) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	type Alias IDPSSODescriptor
+	aux := &struct {
+		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
+		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
+		*Alias
+	}{
+		ValidUntil:    RelaxedTime(m.ValidUntil),
+		CacheDuration: Duration(m.CacheDuration),
+		Alias:         (*Alias)(&m),
+	}
+	return e.Encode(aux)
+}
+
+// UnmarshalXML implements xml.Unmarshaler
+func (m *IDPSSODescriptor) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	type Alias IDPSSODescriptor
+	aux := &struct {
+		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
+		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(m),
+	}
+	if err := d.DecodeElement(aux, &start); err != nil {
+		return err
+	}
+	// m.ValidUntil = time.Time(aux.ValidUntil)
+	m.CacheDuration = time.Duration(aux.CacheDuration)
+	return nil
+}
+
 // SPSSODescriptor represents the SAML SPSSODescriptorType object.
 //
 // See http://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf §2.4.2
@@ -236,6 +299,40 @@ type SPSSODescriptor struct {
 	WantAssertionsSigned       *bool                       `xml:",attr"`
 	AssertionConsumerServices  []IndexedEndpoint           `xml:"AssertionConsumerService"`
 	AttributeConsumingServices []AttributeConsumingService `xml:"AttributeConsumingService"`
+}
+
+func (m SPSSODescriptor) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	type Alias SPSSODescriptor
+	aux := &struct {
+		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
+		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
+		*Alias
+	}{
+		ValidUntil:    RelaxedTime(m.ValidUntil),
+		CacheDuration: Duration(m.CacheDuration),
+		Alias:         (*Alias)(&m),
+	}
+	return e.Encode(aux)
+}
+
+// UnmarshalXML implements xml.Unmarshaler
+func (m *SPSSODescriptor) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	type Alias SPSSODescriptor
+	aux := &struct {
+		XMLName       xml.Name    `xml:"urn:oasis:names:tc:SAML:2.0:metadata IDPSSODescriptor"`
+		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
+		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(m),
+	}
+	if err := d.DecodeElement(aux, &start); err != nil {
+		return err
+	}
+	m.XMLName = aux.XMLName
+	m.ValidUntil = time.Time(aux.ValidUntil)
+	m.CacheDuration = time.Duration(aux.CacheDuration)
+	return nil
 }
 
 // AttributeConsumingService represents the SAML AttributeConsumingService object.

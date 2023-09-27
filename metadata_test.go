@@ -31,6 +31,8 @@ func TestCanParseMetadata(t *testing.T) {
 				SSODescriptor: SSODescriptor{
 					RoleDescriptor: RoleDescriptor{
 						ProtocolSupportEnumeration: "urn:oasis:names:tc:SAML:2.0:protocol",
+						ValidUntil:                 time.Date(2001, time.February, 3, 4, 5, 6, 789000000, time.UTC),
+						CacheDuration:              time.Hour,
 					},
 				},
 				AuthnRequestsSigned:  &False,
@@ -101,6 +103,8 @@ func TestCanProduceSPMetadata(t *testing.T) {
 				WantAssertionsSigned: &WantAssertionsSigned,
 				SSODescriptor: SSODescriptor{
 					RoleDescriptor: RoleDescriptor{
+						ValidUntil:                 validUntil,
+						CacheDuration:              DefaultCacheDuration,
 						ProtocolSupportEnumeration: "urn:oasis:names:tc:SAML:2.0:protocol",
 						KeyDescriptors: []KeyDescriptor{
 							{

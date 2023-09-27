@@ -208,7 +208,7 @@ func (sp *ServiceProvider) Metadata() *EntityDescriptor {
 					RoleDescriptor: RoleDescriptor{
 						ProtocolSupportEnumeration: "urn:oasis:names:tc:SAML:2.0:protocol",
 						KeyDescriptors:             keyDescriptors,
-						ValidUntil:                 &validUntil,
+						ValidUntil:                 validUntil,
 					},
 					SingleLogoutServices: sloEndpoints,
 					NameIDFormats:        []NameIDFormat{sp.AuthnNameIDFormat},
