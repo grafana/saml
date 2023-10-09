@@ -149,37 +149,6 @@ type RoleDescriptor struct {
 	ContactPeople              []ContactPerson `xml:"ContactPerson,omitempty"`
 }
 
-// func (m RoleDescriptor) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
-// 	aux := &struct {
-// 		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
-// 		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
-// 		*RoleDescriptor
-// 	}{
-// 		ValidUntil:     RelaxedTime(m.ValidUntil),
-// 		CacheDuration:  Duration(m.CacheDuration),
-// 		RoleDescriptor: (*RoleDescriptor)(&m),
-// 	}
-// 	return e.Encode(aux)
-// }
-
-// // UnmarshalXML implements xml.Unmarshaler
-// func (m *RoleDescriptor) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-// 	type Alias RoleDescriptor
-// 	aux := &struct {
-// 		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
-// 		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
-// 		*Alias
-// 	}{
-// 		Alias: (*Alias)(m),
-// 	}
-// 	if err := d.DecodeElement(aux, &start); err != nil {
-// 		return err
-// 	}
-// 	// m.ValidUntil = time.Time(aux.ValidUntil)
-// 	m.CacheDuration = time.Duration(aux.CacheDuration)
-// 	return nil
-// }
-
 // KeyDescriptor represents the XMLSEC object of the same name
 type KeyDescriptor struct {
 	Use               string             `xml:"use,attr"`
@@ -275,6 +244,7 @@ func (m IDPSSODescriptor) MarshalXML(e *xml.Encoder, start xml.StartElement) err
 func (m *IDPSSODescriptor) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	type Alias IDPSSODescriptor
 	aux := &struct {
+		XMLName       xml.Name    `xml:"urn:oasis:names:tc:SAML:2.0:metadata IDPSSODescriptor"`
 		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
 		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
 		*Alias
@@ -319,7 +289,7 @@ func (m SPSSODescriptor) MarshalXML(e *xml.Encoder, start xml.StartElement) erro
 func (m *SPSSODescriptor) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	type Alias SPSSODescriptor
 	aux := &struct {
-		XMLName       xml.Name    `xml:"urn:oasis:names:tc:SAML:2.0:metadata IDPSSODescriptor"`
+		XMLName       xml.Name    `xml:"urn:oasis:names:tc:SAML:2.0:metadata SPSSODescriptor"`
 		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
 		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
 		*Alias
