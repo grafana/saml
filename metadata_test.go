@@ -27,7 +27,6 @@ func TestCanParseMetadata(t *testing.T) {
 		CacheDuration: time.Hour,
 		SPSSODescriptors: []SPSSODescriptor{
 			{
-				XMLName: xml.Name{Space: "urn:oasis:names:tc:SAML:2.0:metadata", Local: "SPSSODescriptor"},
 				SSODescriptor: SSODescriptor{
 					RoleDescriptor: RoleDescriptor{
 						ProtocolSupportEnumeration: "urn:oasis:names:tc:SAML:2.0:protocol",
