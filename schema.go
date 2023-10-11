@@ -649,7 +649,7 @@ const (
 	StatusNoAvailableIDP = "urn:oasis:names:tc:SAML:2.0:status:NoAvailableIDP"
 
 	// StatusNoPassive means Indicates the responding provider cannot authenticate the principal passively, as has been requested.
-	StatusNoPassive = "urn:oasis:names:tc:SAML:2.0:status:NoPassive" //nolint:gosec
+	StatusNoPassive = "urn:oasis:names:tc:SAML:2.0:status:NoPassive" // #nosec G101
 
 	// StatusNoSupportedIDP is used by an intermediary to indicate that none of the identity providers in an <IDPList> are supported by the intermediary.
 	StatusNoSupportedIDP = "urn:oasis:names:tc:SAML:2.0:status:NoSupportedIDP"
@@ -667,7 +667,7 @@ const (
 	StatusRequestUnsupported = "urn:oasis:names:tc:SAML:2.0:status:RequestUnsupported"
 
 	// StatusRequestVersionDeprecated means the SAML responder cannot process any requests with the protocol version specified in the request.
-	StatusRequestVersionDeprecated = "urn:oasis:names:tc:SAML:2.0:status:RequestVersionDeprecated"
+	StatusRequestVersionDeprecated = "urn:oasis:names:tc:SAML:2.0:status:RequestVersionDeprecated" // #nosec G101
 
 	// StatusRequestVersionTooHigh means the SAML responder cannot process the request because the protocol version specified in the request message is a major upgrade from the highest protocol version supported by the responder.
 	StatusRequestVersionTooHigh = "urn:oasis:names:tc:SAML:2.0:status:RequestVersionTooHigh"
