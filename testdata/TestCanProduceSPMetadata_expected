@@ -1,5 +1,5 @@
 <EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" validUntil="2013-03-10T00:32:19.104Z" cacheDuration="PT1H" entityID="http://localhost:5000/e087a985171710fb9fb30f30f41384f9/saml2/metadata/">
-  <SPSSODescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol" AuthnRequestsSigned="true" WantAssertionsSigned="true">
+  <SPSSODescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" validUntil="2013-03-10T00:32:19.104Z" cacheDuration="PT24H" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol" AuthnRequestsSigned="true" WantAssertionsSigned="true">
     <KeyDescriptor use="encryption">
       <KeyInfo xmlns="http://www.w3.org/2000/09/xmldsig#">
         <X509Data xmlns="http://www.w3.org/2000/09/xmldsig#">

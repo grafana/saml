@@ -1,0 +1,81 @@
+<ns2:EntityDescriptor xmlns="http://www.w3.org/2000/09/xmldsig#"
+    xmlns:ns2="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:ns3="http://www.w3.org/2001/04/xmlenc#"
+    xmlns:ns4="urn:oasis:names:tc:SAML:2.0:assertion"
+    entityID="https://login.fusionauth.io/samlv2/f32a81a4-e5be-93f2-cb34-ec605ed7f708"
+    ID="_f32a81a4-e5be-93f2-cb34-ec605ed7f708">
+    <ns2:IDPSSODescriptor WantAuthnRequestsSigned="true"
+        protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+        <ns2:KeyDescriptor use="signing">
+            <KeyInfo>
+                <X509Data>
+                    <X509Certificate>
+                        MIICxDCCAaygAwIBAQIQOwSPtsjAS6O4dntXuFH8lzANBgkqhkiG9w0BAQsFADAeMRwwGgYDVQQDExNsb2dpbi5mdXNpb25hdXRoLmlvMB4XDTIyMDgxNzIxNDc1OFoXDTMyMDgxNzIxNDc1OFowHjEcMBoGA1UEAxMTbG9naW4uZnVzaW9uYXV0aC5pbzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANADptGr+yPTRxo+uSt+gffFjRukFrFZpONSlBJtYdJafPTB61ZXEIYBmGU5nicSp67nSUYc3fFWOnK4ZsT5ATQ9ctWEyyC53w2QDQr6+XeLUtoQ+xzsFCw4j2eaqBlQGiaGBzHk+jKsb+5c4/Ep07MI9r5o9/et8k489UOc6puTpTg0Zn1Xgo2l7GVv9FOY4yjRRLXg9m47IZbIrshOEl7zz2ZXYxtSruwWw8kUWed42yfZbI5M/iaoNi2fnzh4S1asf56eFNXvVVYnW/p8wd++87umiAZQAaoW54TeDL8WctQuY64Nd0smVIaczw3by5GidTHyoDPGL+0jaNIxFIUCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEApH37IfLZ7Hsfruma8FqhGwRE+M9P0qtcBt6z4lok5uZMFoQjBWN7/zN3tLeMgmZfRoTFhSpQ3Fv5HNquRJvj15MOom/+SHCVsqH+E7oucoDeoRyYnWm+zK0FNARQXbvx1UXumBJZ+HXgHpvkzOCSgYOTxMe1HYVrThY1F2EcK7qh5os1yZXLlcr3cYc388+1dYHxhIu0YrevzKNGuYhTwcqY0Z87n5mXmH8Dt1VsK5ldfSAp9EqaqKvu4KnzoEGUHql3nVWNNMJLMkEc173qZ4HRxOJ7qAShtud0j2asra6SCLd5jssBvkMJJqFgWf/S6PI5q9wglGYJTViQ9KvDrg==</X509Certificate>
+                </X509Data>
+            </KeyInfo>
+        </ns2:KeyDescriptor>
+        <ns2:KeyDescriptor use="signing">
+            <KeyInfo>
+                <X509Data>
+                    <X509Certificate>
+                        MIICxDCCAaygAwIBAQIQRBGI3tdcSRe4Mkr9m/ZvbDANBgkqhkiG9w0BAQsFADAeMRwwGgYDVQQDExNsb2dpbi5mdXNpb25hdXRoLmlvMB4XDTIzMDIwNDAxMzc0N1oXDTMzMDIwNDAxMzc0N1owHjEcMBoGA1UEAxMTbG9naW4uZnVzaW9uYXV0aC5pbzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALUNRhP5pNVWoI3PVuQChADl9IOLjAEQTQHWwth2B5Olo57cnUmQ9BKjCpcJNKQpBVKzt5Vu72UtmfQ4OnhLsEfDIq0MuS6KRhhbhhVcYYa43Hzt/ngPnR093UBmI36/mpsTuqQCrfeEqKJpg7/449KNCzUJQS6sQO/d9XxUAyYH3CK/47y+HLKUEMYDnY2sZmWKKNauvG5igeoUtawYDMDRx1PU3huFR5sULPO1rTJCNtkcAg5YXWMq4ashWT77rtnMmQj0c9FWh6niyzRTVYo1ANOgyCTxJd0ecIke2PvyVbsCHFzw3Fl+U3dMGfr5xmarF/CbXNTJ6oylyNCZZ/kCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAgxR+6s4QOW/n5wnBEUVr60xJQtEPwyL6jCFURBWkBsJdPMGcUv3glt1lwxAkczOLi+DL272+derVWnHVwIWXzgIky6FGL9n++xaYuXQfT/+ITNZ3OYhcfiv5hDRUnWMSAL9XoVIHt1fvynkb2gUy6ykmAAWEZ41I2GMy4QrVSBLOiTJjVY87uu5ShSMvlSD/Kirpoylygc6IYiGNbv3TCNjds56HV+rSPAcDUuGj6Gq9JQOAQA2dpy6nNtUDL+ndd+NxcOcGuhukE5dsrfiQIwwgjKQ48CBLZVyCFlslRfoRLmluckHg1cXfS7S8y2c0fsP13WLaztQ3poG21vwoLg==</X509Certificate>
+                </X509Data>
+            </KeyInfo>
+        </ns2:KeyDescriptor>
+        <ns2:KeyDescriptor use="signing">
+            <KeyInfo>
+                <X509Data>
+                    <X509Certificate>
+                        MIICxTCCAa2gAwIBAQIRAMSTo6bqo0pEk0mu25dIa6owDQYJKoZIhvcNAQELBQAwHjEcMBoGA1UEAxMTbG9naW4uZnVzaW9uYXV0aC5pbzAeFw0yMjA1MTcxNzU1MDVaFw0zMjA1MTcxNzU1MDVaMB4xHDAaBgNVBAMTE2xvZ2luLmZ1c2lvbmF1dGguaW8wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQClW8D4lYIcVJvXnO6t3QdS1YDZWNI/37PH0gfh9cIl2qeqlQgPdZDRIx4J3RCipYdSdhth77EVmWk4CiShUQe9JoqDalguM7cumMfbhaQ5Q0OJKEG+oaHRW9je+IW0uWTRF2TxvNDF7WzXCyyzL0YGAg6hswAJrkzBIaaV+TOqTyM1n1fsKKKD0/KeGPrV47J3xpNYVGla5K2K6VU1ccf/2/BYaZlNzcv/4T7Jed/xWWHdi0C0RrlQv50NUJ2q6+APzgBp2X60WCAcIsds3U7PI8l50GG5cTZ+aqp0xlOeM/LktlFhHzMhpY7Nkds3w9JObsnlOqC92Lmf6Tu6TXlPAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAB+xo6QXibqXxlvYO9J1fbYwedLqBvwr9jXHlCKp+cqPfp4RfJBbPz2KPZcxf8TgCQF6OPQ3RWThlHCnVf9DlQihm5+ScKpLyGRtkuUMe2Q6lvqdSbQTpFBCNFJ+1HhryUnXhL1aLbUK1dSsT7yFvx5JENklpXgNgQ+eb2TYDL4f06QU6+7Yg6rU2/JjQBgKZ5rWsv8spCyqs1OHYFK9efOupgbOwW2tGP/jJDzUA5LoN3r9KItYs1KXCFTBHeGy73dRqy0Pt7ztnHv2l8tdR1RRfxqKwyHTBttcpBGlJiHgPHCV7gZIcAUY2Y+8rIMsJIONvsIXrtfkgQgv1HW7W88=</X509Certificate>
+                </X509Data>
+            </KeyInfo>
+        </ns2:KeyDescriptor>
+        <ns2:KeyDescriptor use="signing">
+            <KeyInfo>
+                <X509Data>
+                    <X509Certificate>
+                        MIICxDCCAaygAwIBAQIQUzabsBYoRhmD1jWkcnjGYDANBgkqhkiG9w0BAQsFADAeMRwwGgYDVQQDExNsb2dpbi5mdXNpb25hdXRoLmlvMB4XDTIzMDQyNzIxMTY1MloXDTMzMDQyNzIxMTY1MlowHjEcMBoGA1UEAxMTbG9naW4uZnVzaW9uYXV0aC5pbzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJMcyW3tf7wsAC19yGpkfP6LVb/wf+u4oexo86KTtFpeDoLwq5tPEHCgT5xj6JotTduGIlt1PtKZmK/eoMvTzf1ygfRkfRDbpfvIZOfq3m2B50IYBPNj7oEmtRTbPJwZzb/HSPqEYegZ0+at80OEvMHacJCvO3dfG2ZY7X9CF7lKwPZ7D96rrOUlk0yOywRmgTU0g7wpcxJC9NYW8C1vvaLsF/HZspV+saXP84FXqmaaefpJzTumzPcg6Rk1GXJFR1S3YxIq6txiR32euY0F5k+EBt7dH1yXqqwZHkCGauaDjuCicZNUl0MalCcRxdbqlexHh8KPFI6RGc2iO4mQVXECAwEAATANBgkqhkiG9w0BAQsFAAOCAQEADUlR+klbbz+IwTjyzKxyOPSfloI+Wwah3Kbs1BCtlNm4MRkP0+8iUPLmPYuYNNHYP5DDPNgciK9qqmru+I0odkscjm6wn9YcotuSEjFD459N/nbpRO10COvGrMy3khiPt3f2T1MU7+QOyyOnMhniXQegA+5aEXW8yswLFJvoyOXIKdWTIEB4in5QN/izbIjaoBc7h9wCX7x0z+oCrK1iw03F7QE6m8HnXueUU9HBVoAUiJY82+t0+FTfIRblMwElP1P6ScML0XwKhPJxDxut8MMHnb8QwTfoZ6Wy0Nj9oLHu6zHhyi6PB9IMXArRer0gOywyed/V8vTWCgELwbUTBQ==</X509Certificate>
+                </X509Data>
+            </KeyInfo>
+        </ns2:KeyDescriptor>
+        <ns2:KeyDescriptor use="signing">
+            <KeyInfo>
+                <X509Data>
+                    <X509Certificate>
+                        MIICwjCCAaqgAwIBAQIQYpzZmYQGSCmhK/gn/XnyqTANBgkqhkiG9w0BAQsFADAdMRswGQYDVQQDExJsb2dpbi5pbnZlcnNvZnQuaW8wHhcNMjAwMTA3MjEyNDA2WhcNMzAwMTA3MjEyNDA2WjAdMRswGQYDVQQDExJsb2dpbi5pbnZlcnNvZnQuaW8wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCI3+zSFl3R7G6qhJSTg3exV0/XRwCjzTYQ19RJrClyVcJ2hRPddN9NWiWcTExmKeCqcz1tyOLKMVj3ZbnsYUJATiBccctiyhQ0t+ojDGPyWrRJVflbWZar6tj7O1EXbgWNyAHtbdEoQ4/VDmC6jGqNTC7PiVSFWyOmiID2PsFB8yBZx+kT27CKGEQSNpyMncf+ds9iSIlZe5LpSxtptGW3WUis9iwtcFzaV+sQZ3Y/agN0Nzut1dR4DiODL0OImeAaQyu7og4d+Ypu2oH1jp2Tke1SK6yxwYDeuRunbsreIsmcm4AEz1bh0/+Wvn05thSvglFm/oSKTD+3Hs7Vj0XPAgMBAAEwDQYJKoZIhvcNAQELBQADggEBADt8SR/tljjczCZJjjZFOuYfn2bJHcniI/6nZbc6QUhE2IkWVtOIrnz1U7MSKOLTowsw6ZQlgGOqvxgf1cpbyIQNI7tLB0pyWmh17LZ+y3dqKnNqgRBPw3Zt1ESwocoS8POzASDR8j27RG+CHA1nxffU9yhl37o2icDqsjhB8JNB6cHEKCudRLzsyGpuIMa9tiZw7tl6aqfxv4E5wU/xt0j9nkiqxPzZQMuGM/H1tavONtkN1jC0HGCi8VbkLM6VkbEZtXxqBBQ0vOS4/TxRzV7Nceg+NxIK+pz324HZlVI9mF+IV4fbu1V/L8fpbRKhbtt1wbXWzmy/CmuBUqcwPPs=</X509Certificate>
+                </X509Data>
+            </KeyInfo>
+        </ns2:KeyDescriptor>
+        <ns2:KeyDescriptor use="signing">
+            <KeyInfo>
+                <X509Data>
+                    <X509Certificate>
+                        MIICwzCCAaugAwIBAQIRALQxckS5FkxviI5bQogqEGwwDQYJKoZIhvcNAQELBQAwHTEbMBkGA1UEAxMSbG9naW4uaW52ZXJzb2Z0LmlvMB4XDTIwMDEwNzIxMDQzN1oXDTMwMDEwNzIxMDQzN1owHTEbMBkGA1UEAxMSbG9naW4uaW52ZXJzb2Z0LmlvMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAg/lS0D6wW11Wzpk2OBEpeyJHIjQimfBw1BLCxPjQPSCSeuIQugPsky6DvFaxcSVbSxydyT2RhXm5+258da7ls6pylq0Ht6+vSJRXS2NZlVDI4LdDyNXlk6eK+b3VqYu0yP4Xl0ElDxcCqMNXnk8ybv3A6mPxkW0jEBr9GRWEUWQ/2jzqmoj9snBhDXBImNSIVSCtfeVxBNLrg0aQzao4t2C9T2AaNG+tS5U05wU8t76XF2CgHZsl1DloILQORno1DdNpRaN+lT/ioj+9fljo2JRKysbW+rcgVBd8yqMk2UP6VnWItmhi66eYGmcinN78mSFl4tEzd7dm6Ettu4J3+wIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQBfU73acU0l/BDFB8DTU4NLabyw5Up1/V+aB7eQx3y3J+Jvr4KVADcsISPsvL6T1xpgjM05EFxqPVlUtPN0+QiItYrPMl0bhvBKSv8mh6zjEZvXPC3DvCdjcbc0swDiWwTJGqatRowwC1hOsVzyV+c4qSjag8UrQwtq0yStXY2jPCWamj0koypEz6xjKfUZ/6xVHDhxoZFxaOZWA6e3Caoo2IJ7z6N+u0IfNrmxFlryiBsNlZcom2TsFn5I9BMqsLZ9EtzpBkz6HzyPJpxrObaSSF3PaS8PFBYincU9Qt/LXQcfHJrhRJF7lM4b4upyttpIGF4KiupfuYo9T9Iojnxk</X509Certificate>
+                </X509Data>
+            </KeyInfo>
+        </ns2:KeyDescriptor>
+        <ns2:KeyDescriptor use="signing">
+            <KeyInfo>
+                <X509Data>
+                    <X509Certificate>
+                        MIICxTCCAa2gAwIBAQIRAPtRbLD9ykgblVzQSkelGQ8wDQYJKoZIhvcNAQELBQAwHjEcMBoGA1UEAxMTbG9naW4uZnVzaW9uYXV0aC5pbzAeFw0yMzA2MDIxODIzMjJaFw0zMzA2MDIxODIzMjJaMB4xHDAaBgNVBAMTE2xvZ2luLmZ1c2lvbmF1dGguaW8wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCQHAVgYpB104PKyH1N7oPdYPar6jo+JPOjuEc5nUV74l2mw/WrzWs9edFdtHKmfNDdL5lLxhB4Q/vYdsesitaOszmhK313iU1J2ya1kQpwJcuMIUX/Ak2xHOcZTyli9qtTAYHTT8xPIwRcn73Sz1Ekpahp5sHFeY0U32eiXX9aEwkLMhF4vR6Xyst1kDHpwDSYaLAI2xQaSBQoWz6RQA3MLFyjxFx4BHk5wmEDb1hjaVL6WsaROOHGHxONg3Ddw9G+wRzH4aAFc0izcC0VHQ/x9t0s91NGisRWX+VsZDyAbvmyqIcNtwAbMiAnw87fLcfnRjstEoEiuoZcHtekU/dXAgMBAAEwDQYJKoZIhvcNAQELBQADggEBACtWidmd+nRhEHT5hi6NmDXTGvmLZJaSfnFwUQGLpMe9Fv59ezbI9yp5afaqyrVU6xN1KuZehmHy35+KCOQV3dzoQWiUSvFJJyazpiaLt9wtiIgJUCQ8t4BwTA9EEyr0qhNCvjcZ6H9gAe5Q3d0z+ZbubBu3OWUF/QL48I5jnIHWJ344+Ia4NBKaJqWdz4rCnp/9HlopjnPaXexOrbAGRX1Y6rSwe9UVEjIr331zV0kmw+Z5g1a9OaBj/P7Am7g0xcTLMjbXuhUET2mqSIEG0H/stB4b89wBGmdnJLHgHGIVHLIgM/tn6i713YRpnnuG9h3eEgzxTAY45oj5IQZK024=</X509Certificate>
+                </X509Data>
+            </KeyInfo>
+        </ns2:KeyDescriptor>
+        <ns2:KeyDescriptor use="signing">
+            <KeyInfo>
+                <X509Data>
+                    <X509Certificate>
+                        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</X509Certificate>
+                </X509Data>
+            </KeyInfo>
+        </ns2:KeyDescriptor>
+        <ns2:SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+            Location="https://login.fusionauth.io/samlv2/logout/f32a81a4-e5be-93f2-cb34-ec605ed7f708" />
+        <ns2:SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+            Location="https://login.fusionauth.io/samlv2/logout/f32a81a4-e5be-93f2-cb34-ec605ed7f708" />
+        <ns2:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+            Location="https://login.fusionauth.io/samlv2/login/f32a81a4-e5be-93f2-cb34-ec605ed7f708" />
+        <ns2:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+            Location="https://login.fusionauth.io/samlv2/login/f32a81a4-e5be-93f2-cb34-ec605ed7f708" />
+    </ns2:IDPSSODescriptor>
+</ns2:EntityDescriptor>

@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/crewjam/saml/samlsp"
 )
@@ -72,5 +73,9 @@ func main() {
 	http.Handle("/hello", samlMiddleware.RequireAccount(app))
 	http.Handle("/saml/", samlMiddleware)
 	http.Handle("/logout", slo)
-	log.Fatal(http.ListenAndServe(":8000", nil))
+	server := &http.Server{
+		Addr:              ":8000",
+		ReadHeaderTimeout: 3 * time.Second,
+	}
+	log.Fatal(server.ListenAndServe())
 }

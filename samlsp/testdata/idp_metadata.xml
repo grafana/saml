@@ -10,7 +10,7 @@
 		<mdalg:SigningMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" />
 		<mdalg:SigningMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1" />
 	</Extensions>
-	<IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:1.1:protocol urn:mace:shibboleth:1.0 urn:oasis:names:tc:SAML:2.0:protocol">
+	<IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:1.1:protocol urn:mace:shibboleth:1.0 urn:oasis:names:tc:SAML:2.0:protocol" cacheDuration='PT1H'>
 		<Extensions>
 			<shibmd:Scope regexp="false">testshib.org</shibmd:Scope>
 			<mdui:UIInfo>

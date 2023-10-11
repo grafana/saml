@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><ns3:Response xmlns:ns3="urn:oasis:names:tc:SAML:2.0:protocol" xmlns="urn:oasis:names:tc:SAML:2.0:assertion" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" xmlns:ns4="http://www.w3.org/2001/04/xmlenc#" Destination="https://fusionauthprod.grafana.net/saml/acs" ID="_54354784-e00a-4454-a535-c397548bedf6" InResponseTo="id-e3aa4037c7f074eea4f803cef2098e5e6493df9c" IssueInstant="2023-08-08T20:06:43.235Z" Version="2.0">
+  <Issuer>https://login.fusionauth.io/samlv2/f32a81a4-e5be-93f2-cb34-ec605ed7f708</Issuer>
+  <ns3:Status>
+    <ns3:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success"/>
+  </ns3:Status>
+  <Assertion ID="_5a2f359d-cc99-4912-9817-2426757e5cc2" IssueInstant="2023-08-08T20:06:43.249Z" Version="2.0">
+    <Issuer>https://login.fusionauth.io/samlv2/f32a81a4-e5be-93f2-cb34-ec605ed7f708</Issuer>
+    <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+      <SignedInfo>
+        <CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#WithComments"/>
+        <SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+        <Reference URI="#_5a2f359d-cc99-4912-9817-2426757e5cc2">
+          <Transforms>
+            <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+            <Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#WithComments"/>
+          </Transforms>
+          <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+          <DigestValue>cuYpIcqUr+nj1ZLlG9pfaZ4josQw65Ji/sOaD4DCuRQ=</DigestValue>
+        </Reference>
+      </SignedInfo>
+      <SignatureValue>K82qyyyqmqetcHp8jaqvaq9dqWgWbFZ/e9aKqQK+CJeiIh29AtyApo2PGSyne5sWdq4s+E0u+WFHJjQ016t2F06H9OK1572ROCCxyGK+eoExNHBjPL0jtV/9KpI4gPxqvnSfpzP7KZBLdCwwFSrPtPDVXthjKm+V6Vie9oUsYcGswJcwKiE7fQcDg56/805OsjnZcP/yZvM/PkUeLWCadD1HSVsY8j4Gg761vJnDlcUrDKD1RGx+HH4L1MO0Qqa75ubFive6lI78qummHQIbQWMroSL1uOc5v8r+K//H7wLrhvYy/kAXLeICjckxTmAKOtfATgK3uwAzNtm5GYpOh+xKtI/zwZybS70MwqKh5Myi/1JTyHikZQP+WY88ojlAAqRDfA8CfoeC2izjkZ7ikAdKS/bkRthL6SX3lZt9bCmvxyWcjCmRfEmVL1Sf7NbEX3LAK/3sHBQUbF5Hd8JxwAAd/OGQ0V2SJnKAT4Y2yjkCqihkfrlCIQ7lkiKpnecz8ggML91+A10Um6fJbQOU47/EDm5ybIV7ZZ0eU2lHxpNOHHqbYorxm10CkFvgP8UHOBIS8+VLHHEWwQe5U19TXHhB9EGkb5y/QjxSfKwR26sUYxWjt+oWGE2GxaZt9zrILXskozMUIdMydGJnUIUFM5Yzi5APUE7zwPpWqDgmZRs=</SignatureValue>
+      <KeyInfo>
+        <X509Data>
+          <X509Certificate>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</X509Certificate>
+        </X509Data>
+      </KeyInfo>
+    </Signature>
+    <Subject>
+      <NameID Format="urn:oasis:names:tc:SAML:2.0:nameid-format:persistent">00000000-0000-0000-0000-00000012cbce</NameID>
+      <SubjectConfirmation Method="urn:oasis:names:tc:SAML:2.0:cm:bearer">
+        <SubjectConfirmationData InResponseTo="id-e3aa4037c7f074eea4f803cef2098e5e6493df9c" NotOnOrAfter="2023-08-08T21:06:43.235Z" Recipient="https://fusionauthprod.grafana.net/saml/acs"/>
+      </SubjectConfirmation>
+    </Subject>
+    <Conditions NotBefore="2023-08-08T20:03:43.235Z" NotOnOrAfter="2023-08-08T20:36:43.235Z">
+      <AudienceRestriction>
+        <Audience>https://fusionauthprod.grafana.net/saml/metadata</Audience>
+      </AudienceRestriction>
+    </Conditions>
+    <AttributeStatement>
+      <Attribute Name="email">
+        <AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string">daniel@fusionauth.io</AttributeValue>
+      </Attribute>
+      <Attribute Name="first_name">
+        <AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string">Daniel</AttributeValue>
+      </Attribute>
+      <Attribute Name="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress">
+        <AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string">daniel@fusionauth.io</AttributeValue>
+      </Attribute>
+      <Attribute Name="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname">
+        <AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string">Daniel</AttributeValue>
+      </Attribute>
+      <Attribute Name="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname">
+        <AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string">DeGroff</AttributeValue>
+      </Attribute>
+      <Attribute Name="id">
+        <AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string">00000000-0000-0000-0000-00000012cbce</AttributeValue>
+      </Attribute>
+      <Attribute Name="last_name">
+        <AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string">DeGroff</AttributeValue>
+      </Attribute>
+      <Attribute Name="role">
+        <AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string">admin</AttributeValue>
+      </Attribute>
+    </AttributeStatement>
+    <AuthnStatement AuthnInstant="2023-08-08T20:06:43.249Z" SessionIndex="7bfa28aa-594f-4512-8582-18c7bd7b2b4c">
+      <AuthnContext>
+        <AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:Password</AuthnContextClassRef>
+      </AuthnContext>
+    </AuthnStatement>
+  </Assertion>
+</ns3:Response>

@@ -208,7 +208,7 @@ func (sp *ServiceProvider) Metadata() *EntityDescriptor {
 					RoleDescriptor: RoleDescriptor{
 						ProtocolSupportEnumeration: "urn:oasis:names:tc:SAML:2.0:protocol",
 						KeyDescriptors:             keyDescriptors,
-						ValidUntil:                 &validUntil,
+						ValidUntil:                 validUntil,
 					},
 					SingleLogoutServices: sloEndpoints,
 					NameIDFormats:        []NameIDFormat{sp.AuthnNameIDFormat},
@@ -1664,7 +1664,7 @@ func elementToBytes(el *etree.Element) ([]byte, error) {
 		for _, attr := range currentElement.Attr {
 			// "xmlns" is either the space or the key of the attribute, depending on whether it is a default namespace declaration or not
 			if attr.Space == "xmlns" || attr.Key == "xmlns" {
-				// If the namespace is already preset in the list, it means that a child element has overriden it, so skip it
+				// If the namespace is already preset in the list, it means that a child element has overridden it, so skip it
 				if _, prefixExists := namespaces[attr.FullKey()]; !prefixExists {
 					namespaces[attr.FullKey()] = attr.Value
 				}
