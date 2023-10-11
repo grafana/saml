@@ -75,10 +75,9 @@ func main() {
 	http.Handle("/hello", samlMiddleware.RequireAccount(app))
 	http.Handle("/saml/", samlMiddleware)
 	http.Handle("/logout", slo)
-
 	server := &http.Server{
-		Addr:              ":8080",
-		ReadHeaderTimeout: 5 * time.Second,
+		Addr:              ":8000",
+		ReadHeaderTimeout: 3 * time.Second,
 	}
 	log.Fatal(server.ListenAndServe())
 }
