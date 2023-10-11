@@ -176,6 +176,8 @@ func TestIDPCanProduceMetadata(t *testing.T) {
 			{
 				SSODescriptor: SSODescriptor{
 					RoleDescriptor: RoleDescriptor{
+						ValidUntil:                 TimeNow().Add(DefaultValidDuration),
+						CacheDuration:              DefaultValidDuration,
 						ProtocolSupportEnumeration: "urn:oasis:names:tc:SAML:2.0:protocol",
 						KeyDescriptors: []KeyDescriptor{
 							{
@@ -234,8 +236,9 @@ func TestIDPHTTPCanHandleMetadataRequest(t *testing.T) {
 	test.IDP.Handler().ServeHTTP(w, r)
 	assert.Check(t, is.Equal(http.StatusOK, w.Code))
 	assert.Check(t, is.Equal("application/samlmetadata+xml", w.Header().Get("Content-type")))
-	assert.Check(t, strings.HasPrefix(w.Body.String(), "<EntityDescriptor"),
-		w.Body.String())
+	body := string(w.Body.Bytes())
+	assert.Check(t, strings.HasPrefix(body, "<EntityDescriptor"),
+		string(w.Body.Bytes()))
 }
 
 func TestIDPCanHandleRequestWithNewSession(t *testing.T) {
