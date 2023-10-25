@@ -264,7 +264,7 @@ func (r *AuthnRequest) Redirect(relayState string, sp *ServiceProvider) (*url.UR
 
 	rv, _ := url.Parse(r.Destination)
 	// We can't depend on Query().set() as order matters for signing
-	reqString := string(w.Bytes())
+	reqString := w.String()
 	query := rv.RawQuery
 	if len(query) > 0 {
 		query += "&" + string(samlRequest) + "=" + url.QueryEscape(reqString)
@@ -1574,11 +1574,8 @@ func (sp *ServiceProvider) ValidateLogoutResponseRedirect(query url.Values) erro
 		retErr.PrivateErr = err
 		return retErr
 	}
-	if err := sp.validateLogoutResponse(&resp); err != nil {
-		return err
-	}
 
-	return nil
+	return sp.validateLogoutResponse(&resp)
 }
 
 // validateLogoutResponse validates the LogoutResponse fields. Returns a nil error if the LogoutResponse is valid.

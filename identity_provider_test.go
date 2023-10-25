@@ -236,9 +236,9 @@ func TestIDPHTTPCanHandleMetadataRequest(t *testing.T) {
 	test.IDP.Handler().ServeHTTP(w, r)
 	assert.Check(t, is.Equal(http.StatusOK, w.Code))
 	assert.Check(t, is.Equal("application/samlmetadata+xml", w.Header().Get("Content-type")))
-	body := string(w.Body.Bytes())
+	body := w.Body.String()
 	assert.Check(t, strings.HasPrefix(body, "<EntityDescriptor"),
-		string(w.Body.Bytes()))
+		w.Body.String())
 }
 
 func TestIDPCanHandleRequestWithNewSession(t *testing.T) {

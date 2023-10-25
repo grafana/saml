@@ -72,12 +72,13 @@ func (sp *ServiceProvider) validateQuerySig(query url.Values) error {
 	}
 
 	respType := ""
-	if query.Get("SAMLResponse") != "" {
+	switch {
+	case query.Get("SAMLResponse") != "":
 		respType = "SAMLResponse"
-	} else if query.Get("SAMLRequest") != "" {
+	case query.Get("SAMLRequest") != "":
 		respType = "SAMLRequest"
-	} else {
-		return fmt.Errorf("No SAMLResponse or SAMLRequest found in query")
+	default:
+		return fmt.Errorf("no SAMLResponse or SAMLRequest found in query")
 	}
 
 	// Encode Query as standard demands.
