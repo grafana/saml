@@ -499,16 +499,16 @@ func (sp *ServiceProvider) SignAuthnRequest(req *AuthnRequest) error {
 // MakePostAuthenticationRequest creates a SAML authentication request using
 // the HTTP-POST binding. It returns HTML text representing an HTML form that
 // can be sent presented to a browser to initiate the login process.
-func (sp *ServiceProvider) MakePostAuthenticationRequest(relayState string) ([]byte, error) {
+func (sp *ServiceProvider) MakePostAuthenticationRequest(relayState, nonce string) ([]byte, error) {
 	req, err := sp.MakeAuthenticationRequest(sp.GetSSOBindingLocation(HTTPPostBinding), HTTPPostBinding, HTTPPostBinding)
 	if err != nil {
 		return nil, err
 	}
-	return req.Post(relayState), nil
+	return req.Post(relayState, nonce), nil
 }
 
 // Post returns an HTML form suitable for using the HTTP-POST binding with the request
-func (r *AuthnRequest) Post(relayState string) []byte {
+func (r *AuthnRequest) Post(relayState, nonce string) []byte {
 	doc := etree.NewDocument()
 	doc.SetRoot(r.Element())
 	reqBuf, err := doc.WriteToBytes()
@@ -523,16 +523,18 @@ func (r *AuthnRequest) Post(relayState string) []byte {
 		`<input type="hidden" name="RelayState" value="{{.RelayState}}" />` +
 		`<input id="SAMLSubmitButton" type="submit" value="Submit" />` +
 		`</form>` +
-		`<script>document.getElementById('SAMLSubmitButton').style.visibility="hidden";` +
+		`<script{{ if ne .Nonce "" }} nonce="{{ .Nonce }}"{{ end }}>document.getElementById('SAMLSubmitButton').style.visibility="hidden";` +
 		`document.getElementById('SAMLRequestForm').submit();</script>`))
 	data := struct {
 		URL         string
 		SAMLRequest string
 		RelayState  string
+		Nonce       string
 	}{
 		URL:         r.Destination,
 		SAMLRequest: encodedReqBuf,
 		RelayState:  relayState,
+		Nonce:       nonce,
 	}
 
 	rv := bytes.Buffer{}

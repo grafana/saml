@@ -261,7 +261,28 @@ func TestSPCanProducePostRequest(t *testing.T) {
 	err := xml.Unmarshal(test.IDPMetadata, &s.IDPMetadata)
 	assert.Check(t, err)
 
-	form, err := s.MakePostAuthenticationRequest("relayState")
+	form, err := s.MakePostAuthenticationRequest("relayState", "")
+	assert.Check(t, err)
+	golden.Assert(t, string(form), t.Name()+"_form")
+}
+
+func TestSPCanProducePostRequestWithNonce(t *testing.T) {
+	test := NewServiceProviderTest(t)
+	TimeNow = func() time.Time {
+		rv, _ := time.Parse("Mon Jan 2 15:04:05 UTC 2006", "Mon Dec 1 01:31:21 UTC 2015")
+		return rv
+	}
+	s := ServiceProvider{
+		Key:         test.Key,
+		Certificate: test.Certificate,
+		MetadataURL: mustParseURL("https://15661444.ngrok.io/saml2/metadata"),
+		AcsURL:      mustParseURL("https://15661444.ngrok.io/saml2/acs"),
+		IDPMetadata: &EntityDescriptor{},
+	}
+	err := xml.Unmarshal(test.IDPMetadata, &s.IDPMetadata)
+	assert.Check(t, err)
+
+	form, err := s.MakePostAuthenticationRequest("relayState", "nonce-123")
 	assert.Check(t, err)
 	golden.Assert(t, string(form), t.Name()+"_form")
 }
@@ -320,7 +341,7 @@ func TestSPCanProduceSignedRequestPostBinding(t *testing.T) {
 	err := xml.Unmarshal(test.IDPMetadata, &s.IDPMetadata)
 	assert.Check(t, err)
 
-	htmlForm, err := s.MakePostAuthenticationRequest("relayState")
+	htmlForm, err := s.MakePostAuthenticationRequest("relayState", "nonce-123")
 	assert.Check(t, err)
 	rgx := regexp.MustCompile(`\"SAMLRequest\" value=\"(.*?)\" /><input`)
 	rs := rgx.FindStringSubmatch(string(htmlForm))
