@@ -375,6 +375,19 @@ func TestSPFailToProduceSignedRequestWithBogusSignatureMethod(t *testing.T) {
 }
 
 func TestSPCanProducePostLogoutRequest(t *testing.T) {
+	testCases := []struct {
+		name         string
+		sessionIndex string
+	}{
+		{
+			name: "TestSPCanProducePostLogoutRequest_NoSessionIndex",
+		},
+		{
+			name:         "TestSPCanProducePostLogoutRequest_SessionIndex",
+			sessionIndex: "session-123",
+		},
+	}
+
 	test := NewServiceProviderTest(t)
 	TimeNow = func() time.Time {
 		rv, _ := time.Parse("Mon Jan 2 15:04:05 UTC 2006", "Mon Dec 1 01:31:21 UTC 2015")
@@ -390,12 +403,30 @@ func TestSPCanProducePostLogoutRequest(t *testing.T) {
 	err := xml.Unmarshal(test.IDPMetadata, &s.IDPMetadata)
 	assert.Check(t, err)
 
-	form, err := s.MakePostLogoutRequest("ros@octolabs.io", "relayState")
-	assert.Check(t, err)
-	golden.Assert(t, string(form), t.Name()+"_form")
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			RandReader = &testRandomReader{}
+			form, err := s.MakePostLogoutRequest("ros@octolabs.io", "relayState", tc.sessionIndex)
+			assert.Check(t, err)
+			golden.Assert(t, string(form), tc.name+"_form")
+		})
+	}
 }
 
 func TestSPCanProduceRedirectLogoutRequest(t *testing.T) {
+	testCases := []struct {
+		name         string
+		sessionIndex string
+	}{
+		{
+			name: "TestSPCanProduceRedirectLogoutRequest_NoSessionIndex",
+		},
+		{
+			name:         "TestSPCanProduceRedirectLogoutRequest_SessionIndex",
+			sessionIndex: "session-123",
+		},
+	}
+
 	test := NewServiceProviderTest(t)
 	TimeNow = func() time.Time {
 		rv, _ := time.Parse("Mon Jan 2 15:04:05.999999999 UTC 2006", "Mon Dec 1 01:31:21.123456789 UTC 2015")
@@ -412,16 +443,22 @@ func TestSPCanProduceRedirectLogoutRequest(t *testing.T) {
 	err := xml.Unmarshal(test.IDPMetadata, &s.IDPMetadata)
 	assert.Check(t, err)
 
-	redirectURL, err := s.MakeRedirectLogoutRequest("ross@octolabs.io", "relayState")
-	assert.Check(t, err)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			RandReader = &testRandomReader{}
 
-	decodedRequest, err := testsaml.ParseRedirectRequest(redirectURL)
-	assert.Check(t, err)
-	assert.Check(t, is.Equal("idp.testshib.org",
-		redirectURL.Host))
-	assert.Check(t, is.Equal("/idp/profile/SAML2/Redirect/SLO",
-		redirectURL.Path))
-	golden.Assert(t, string(decodedRequest), t.Name()+"_decodedRequest")
+			redirectURL, err := s.MakeRedirectLogoutRequest("ross@octolabs.io", "relayState", tc.sessionIndex)
+			assert.Check(t, err)
+
+			decodedRequest, err := testsaml.ParseRedirectRequest(redirectURL)
+			assert.Check(t, err)
+			assert.Check(t, is.Equal("idp.testshib.org",
+				redirectURL.Host))
+			assert.Check(t, is.Equal("/idp/profile/SAML2/Redirect/SLO",
+				redirectURL.Path))
+			golden.Assert(t, string(decodedRequest), tc.name+"_decodedRequest")
+		})
+	}
 }
 
 func TestSPCanProducePostLogoutResponse(t *testing.T) {
