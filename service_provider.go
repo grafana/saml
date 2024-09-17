@@ -1192,7 +1192,7 @@ func (sp *ServiceProvider) SignLogoutRequest(req *LogoutRequest) error {
 }
 
 // MakeLogoutRequest produces a new LogoutRequest object for idpURL.
-func (sp *ServiceProvider) MakeLogoutRequest(idpURL, nameID string) (*LogoutRequest, error) {
+func (sp *ServiceProvider) MakeLogoutRequest(idpURL, nameID, sessionIndex string) (*LogoutRequest, error) {
 
 	req := LogoutRequest{
 		ID:           fmt.Sprintf("id-%x", randomBytes(20)),
@@ -1210,6 +1210,10 @@ func (sp *ServiceProvider) MakeLogoutRequest(idpURL, nameID string) (*LogoutRequ
 			SPNameQualifier: sp.Metadata().EntityID,
 		},
 	}
+	if sessionIndex != "" {
+		req.SessionIndex = &SessionIndex{sessionIndex}
+	}
+
 	if len(sp.SignatureMethod) > 0 {
 		if err := sp.SignLogoutRequest(&req); err != nil {
 			return nil, err
@@ -1221,8 +1225,8 @@ func (sp *ServiceProvider) MakeLogoutRequest(idpURL, nameID string) (*LogoutRequ
 // MakeRedirectLogoutRequest creates a SAML authentication request using
 // the HTTP-Redirect binding. It returns a URL that we will redirect the user to
 // in order to start the auth process.
-func (sp *ServiceProvider) MakeRedirectLogoutRequest(nameID, relayState string) (*url.URL, error) {
-	req, err := sp.MakeLogoutRequest(sp.GetSLOBindingLocation(HTTPRedirectBinding), nameID)
+func (sp *ServiceProvider) MakeRedirectLogoutRequest(nameID, relayState, sessionIndex string) (*url.URL, error) {
+	req, err := sp.MakeLogoutRequest(sp.GetSLOBindingLocation(HTTPRedirectBinding), nameID, sessionIndex)
 	if err != nil {
 		return nil, err
 	}
@@ -1261,8 +1265,8 @@ func (r *LogoutRequest) Redirect(relayState string) *url.URL {
 // MakePostLogoutRequest creates a SAML authentication request using
 // the HTTP-POST binding. It returns HTML text representing an HTML form that
 // can be sent presented to a browser to initiate the logout process.
-func (sp *ServiceProvider) MakePostLogoutRequest(nameID, relayState string) ([]byte, error) {
-	req, err := sp.MakeLogoutRequest(sp.GetSLOBindingLocation(HTTPPostBinding), nameID)
+func (sp *ServiceProvider) MakePostLogoutRequest(nameID, relayState, sessionIndex string) ([]byte, error) {
+	req, err := sp.MakeLogoutRequest(sp.GetSLOBindingLocation(HTTPPostBinding), nameID, sessionIndex)
 	if err != nil {
 		return nil, err
 	}
