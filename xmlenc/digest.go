@@ -6,8 +6,7 @@ import (
 	"crypto/sha512"
 	"hash"
 
-	//nolint:staticcheck // We should support this for legacy reasons.
-	"golang.org/x/crypto/ripemd160"
+	"golang.org/x/crypto/ripemd160" //nolint:staticcheck,gosec // We should support this for legacy reasons.
 )
 
 type digestMethod struct {
