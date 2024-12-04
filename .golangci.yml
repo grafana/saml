@@ -65,8 +65,15 @@ linters-settings:
       - unreachable
       - unsafeptr
       - unusedresult
+
 issues:
   exclude-use-default: false
   exclude:
     - G104 # 'Errors unhandled. (gosec)
-
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+    - path: example/
+      linters:
+        - errcheck
