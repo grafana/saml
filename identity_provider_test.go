@@ -126,7 +126,7 @@ func NewIdentityProviderTest(t *testing.T, opts ...idpTestOpts) *IdentityProvide
 		MetadataURL: mustParseURL("https://idp.example.com/saml/metadata"),
 		SSOURL:      mustParseURL("https://idp.example.com/saml/sso"),
 		ServiceProviderProvider: &mockServiceProviderProvider{
-			GetServiceProviderFunc: func(r *http.Request, serviceProviderID string) (*EntityDescriptor, error) {
+			GetServiceProviderFunc: func(_ *http.Request, serviceProviderID string) (*EntityDescriptor, error) {
 				if serviceProviderID == test.SP.MetadataURL.String() {
 					return test.SP.Metadata(), nil
 				}
@@ -134,7 +134,7 @@ func NewIdentityProviderTest(t *testing.T, opts ...idpTestOpts) *IdentityProvide
 			},
 		},
 		SessionProvider: &mockSessionProvider{
-			GetSessionFunc: func(w http.ResponseWriter, r *http.Request, req *IdpAuthnRequest) *Session {
+			GetSessionFunc: func(_ http.ResponseWriter, _ *http.Request, _ *IdpAuthnRequest) *Session {
 				return nil
 			},
 		},
@@ -244,7 +244,7 @@ func TestIDPHTTPCanHandleMetadataRequest(t *testing.T) {
 func TestIDPCanHandleRequestWithNewSession(t *testing.T) {
 	test := NewIdentityProviderTest(t, applyKey)
 	test.IDP.SessionProvider = &mockSessionProvider{
-		GetSessionFunc: func(w http.ResponseWriter, r *http.Request, req *IdpAuthnRequest) *Session {
+		GetSessionFunc: func(w http.ResponseWriter, _ *http.Request, req *IdpAuthnRequest) *Session {
 			fmt.Fprintf(w, "RelayState: %s\nSAMLRequest: %s",
 				req.RelayState, req.RequestBuffer)
 			return nil
@@ -270,7 +270,7 @@ func TestIDPCanHandleRequestWithNewSession(t *testing.T) {
 func TestIDPCanHandleRequestWithExistingSession(t *testing.T) {
 	test := NewIdentityProviderTest(t, applyKey)
 	test.IDP.SessionProvider = &mockSessionProvider{
-		GetSessionFunc: func(w http.ResponseWriter, r *http.Request, req *IdpAuthnRequest) *Session {
+		GetSessionFunc: func(_ http.ResponseWriter, _ *http.Request, _ *IdpAuthnRequest) *Session {
 			return &Session{
 				ID:       "f00df00df00d",
 				UserName: "alice",
@@ -295,7 +295,7 @@ func TestIDPCanHandleRequestWithExistingSession(t *testing.T) {
 func TestIDPCanHandlePostRequestWithExistingSession(t *testing.T) {
 	test := NewIdentityProviderTest(t, applyKey)
 	test.IDP.SessionProvider = &mockSessionProvider{
-		GetSessionFunc: func(w http.ResponseWriter, r *http.Request, req *IdpAuthnRequest) *Session {
+		GetSessionFunc: func(_ http.ResponseWriter, _ *http.Request, _ *IdpAuthnRequest) *Session {
 			return &Session{
 				ID:       "f00df00df00d",
 				UserName: "alice",
@@ -324,7 +324,7 @@ func TestIDPCanHandlePostRequestWithExistingSession(t *testing.T) {
 func TestIDPRejectsInvalidRequest(t *testing.T) {
 	test := NewIdentityProviderTest(t, applyKey)
 	test.IDP.SessionProvider = &mockSessionProvider{
-		GetSessionFunc: func(w http.ResponseWriter, r *http.Request, req *IdpAuthnRequest) *Session {
+		GetSessionFunc: func(_ http.ResponseWriter, _ *http.Request, _ *IdpAuthnRequest) *Session {
 			panic("not reached")
 		},
 	}
@@ -487,7 +487,6 @@ func TestIDPCanValidate(t *testing.T) {
 			"</AuthnRequest>"),
 	}
 	assert.Check(t, is.Error(req.Validate(), "cannot find assertion consumer service: file does not exist"))
-
 }
 
 func TestIDPMakeAssertion(t *testing.T) {
@@ -594,83 +593,82 @@ func TestIDPMakeAssertion(t *testing.T) {
 	})
 	assert.Check(t, err)
 
-	expectedAttributes :=
-		[]Attribute{
-			{
-				FriendlyName: "uid",
-				Name:         "urn:oid:0.9.2342.19200300.100.1.1",
-				NameFormat:   "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
-				Values: []AttributeValue{
-					{
-						Type:  "xs:string",
-						Value: "alice",
-					},
+	expectedAttributes := []Attribute{
+		{
+			FriendlyName: "uid",
+			Name:         "urn:oid:0.9.2342.19200300.100.1.1",
+			NameFormat:   "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
+			Values: []AttributeValue{
+				{
+					Type:  "xs:string",
+					Value: "alice",
 				},
 			},
-			{
-				FriendlyName: "eduPersonPrincipalName",
-				Name:         "urn:oid:1.3.6.1.4.1.5923.1.1.1.6",
-				NameFormat:   "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
-				Values: []AttributeValue{
-					{
-						Type:  "xs:string",
-						Value: "alice@example.com",
-					},
+		},
+		{
+			FriendlyName: "eduPersonPrincipalName",
+			Name:         "urn:oid:1.3.6.1.4.1.5923.1.1.1.6",
+			NameFormat:   "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
+			Values: []AttributeValue{
+				{
+					Type:  "xs:string",
+					Value: "alice@example.com",
 				},
 			},
-			{
-				FriendlyName: "sn",
-				Name:         "urn:oid:2.5.4.4",
-				NameFormat:   "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
-				Values: []AttributeValue{
-					{
-						Type:  "xs:string",
-						Value: "Smith",
-					},
+		},
+		{
+			FriendlyName: "sn",
+			Name:         "urn:oid:2.5.4.4",
+			NameFormat:   "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
+			Values: []AttributeValue{
+				{
+					Type:  "xs:string",
+					Value: "Smith",
 				},
 			},
-			{
-				FriendlyName: "givenName",
-				Name:         "urn:oid:2.5.4.42",
-				NameFormat:   "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
-				Values: []AttributeValue{
-					{
-						Type:  "xs:string",
-						Value: "Alice",
-					},
+		},
+		{
+			FriendlyName: "givenName",
+			Name:         "urn:oid:2.5.4.42",
+			NameFormat:   "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
+			Values: []AttributeValue{
+				{
+					Type:  "xs:string",
+					Value: "Alice",
 				},
 			},
-			{
-				FriendlyName: "cn",
-				Name:         "urn:oid:2.5.4.3",
-				NameFormat:   "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
-				Values: []AttributeValue{
-					{
-						Type:  "xs:string",
-						Value: "Alice Smith",
-					},
+		},
+		{
+			FriendlyName: "cn",
+			Name:         "urn:oid:2.5.4.3",
+			NameFormat:   "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
+			Values: []AttributeValue{
+				{
+					Type:  "xs:string",
+					Value: "Alice Smith",
 				},
 			},
-			{
-				FriendlyName: "eduPersonAffiliation",
-				Name:         "urn:oid:1.3.6.1.4.1.5923.1.1.1.1",
-				NameFormat:   "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
-				Values: []AttributeValue{
-					{
-						Type:  "xs:string",
-						Value: "Users",
-					},
-					{
-						Type:  "xs:string",
-						Value: "Administrators",
-					},
-					{
-						Type:  "xs:string",
-						Value: "♀",
-					},
+		},
+		{
+			FriendlyName: "eduPersonAffiliation",
+			Name:         "urn:oid:1.3.6.1.4.1.5923.1.1.1.1",
+			NameFormat:   "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
+			Values: []AttributeValue{
+				{
+					Type:  "xs:string",
+					Value: "Users",
+				},
+				{
+					Type:  "xs:string",
+					Value: "Administrators",
+				},
+				{
+					Type:  "xs:string",
+					Value: "♀",
 				},
 			},
-		}
+		},
+	}
 	assert.Check(t, is.DeepEqual(expectedAttributes, req.Assertion.AttributeStatements[0].Attributes))
 }
 
@@ -801,7 +799,7 @@ func TestIDPWriteResponse(t *testing.T) {
 func TestIDPIDPInitiatedNewSession(t *testing.T) {
 	test := NewIdentityProviderTest(t, applyKey)
 	test.IDP.SessionProvider = &mockSessionProvider{
-		GetSessionFunc: func(w http.ResponseWriter, r *http.Request, req *IdpAuthnRequest) *Session {
+		GetSessionFunc: func(w http.ResponseWriter, _ *http.Request, req *IdpAuthnRequest) *Session {
 			fmt.Fprintf(w, "RelayState: %s", req.RelayState)
 			return nil
 		},
@@ -817,7 +815,7 @@ func TestIDPIDPInitiatedNewSession(t *testing.T) {
 func TestIDPIDPInitiatedExistingSession(t *testing.T) {
 	test := NewIdentityProviderTest(t, applyKey)
 	test.IDP.SessionProvider = &mockSessionProvider{
-		GetSessionFunc: func(w http.ResponseWriter, r *http.Request, req *IdpAuthnRequest) *Session {
+		GetSessionFunc: func(_ http.ResponseWriter, _ *http.Request, _ *IdpAuthnRequest) *Session {
 			return &Session{
 				ID:       "f00df00df00d",
 				UserName: "alice",
@@ -835,7 +833,7 @@ func TestIDPIDPInitiatedExistingSession(t *testing.T) {
 func TestIDPIDPInitiatedBadServiceProvider(t *testing.T) {
 	test := NewIdentityProviderTest(t, applyKey)
 	test.IDP.SessionProvider = &mockSessionProvider{
-		GetSessionFunc: func(w http.ResponseWriter, r *http.Request, req *IdpAuthnRequest) *Session {
+		GetSessionFunc: func(_ http.ResponseWriter, _ *http.Request, _ *IdpAuthnRequest) *Session {
 			return &Session{
 				ID:       "f00df00df00d",
 				UserName: "alice",
@@ -852,7 +850,7 @@ func TestIDPIDPInitiatedBadServiceProvider(t *testing.T) {
 func TestIDPCanHandleUnencryptedResponse(t *testing.T) {
 	test := NewIdentityProviderTest(t, applyKey)
 	test.IDP.SessionProvider = &mockSessionProvider{
-		GetSessionFunc: func(w http.ResponseWriter, r *http.Request, req *IdpAuthnRequest) *Session {
+		GetSessionFunc: func(_ http.ResponseWriter, _ *http.Request, _ *IdpAuthnRequest) *Session {
 			return &Session{ID: "f00df00df00d", UserName: "alice"}
 		},
 	}
@@ -863,7 +861,7 @@ func TestIDPCanHandleUnencryptedResponse(t *testing.T) {
 		&metadata)
 	assert.Check(t, err)
 	test.IDP.ServiceProviderProvider = &mockServiceProviderProvider{
-		GetServiceProviderFunc: func(r *http.Request, serviceProviderID string) (*EntityDescriptor, error) {
+		GetServiceProviderFunc: func(_ *http.Request, serviceProviderID string) (*EntityDescriptor, error) {
 			if serviceProviderID == "https://gitlab.example.com/users/saml/metadata" {
 				return &metadata, nil
 			}
@@ -1023,14 +1021,15 @@ func TestIDPRequestedAttributes(t *testing.T) {
 					},
 				},
 			},
-		}}}
+		},
+	}}
 	assert.Check(t, is.DeepEqual(expectedAttributes, req.Assertion.AttributeStatements))
 }
 
 func TestIDPNoDestination(t *testing.T) {
 	test := NewIdentityProviderTest(t, applyKey)
 	test.IDP.SessionProvider = &mockSessionProvider{
-		GetSessionFunc: func(w http.ResponseWriter, r *http.Request, req *IdpAuthnRequest) *Session {
+		GetSessionFunc: func(_ http.ResponseWriter, _ *http.Request, _ *IdpAuthnRequest) *Session {
 			return &Session{ID: "f00df00df00d", UserName: "alice"}
 		},
 	}
@@ -1039,7 +1038,7 @@ func TestIDPNoDestination(t *testing.T) {
 	err := xml.Unmarshal(golden.Get(t, "TestIDPNoDestination_idp_metadata.xml"), &metadata)
 	assert.Check(t, err)
 	test.IDP.ServiceProviderProvider = &mockServiceProviderProvider{
-		GetServiceProviderFunc: func(r *http.Request, serviceProviderID string) (*EntityDescriptor, error) {
+		GetServiceProviderFunc: func(_ *http.Request, serviceProviderID string) (*EntityDescriptor, error) {
 			if serviceProviderID == "https://gitlab.example.com/users/saml/metadata" {
 				return &metadata, nil
 			}
@@ -1070,7 +1069,7 @@ func TestIDPNoDestination(t *testing.T) {
 func TestIDPRejectDecompressionBomb(t *testing.T) {
 	test := NewIdentityProviderTest(t)
 	test.IDP.SessionProvider = &mockSessionProvider{
-		GetSessionFunc: func(w http.ResponseWriter, r *http.Request, req *IdpAuthnRequest) *Session {
+		GetSessionFunc: func(w http.ResponseWriter, _ *http.Request, req *IdpAuthnRequest) *Session {
 			fmt.Fprintf(w, "RelayState: %s\nSAMLRequest: %s",
 				req.RelayState, req.RequestBuffer)
 			return nil

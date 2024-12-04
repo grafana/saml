@@ -23,7 +23,7 @@ VCmrKY+UewyNIcsLZF0jsNI2qJjiU1vQxN8CQQDfQJnigMQwlfO3/Ga1po6Buu2R
 ztiZhuvuVAoKIv5HnDqC0CNqIUAZtzlozDB3f+xT6SFr+/Plfn4Nlod4JMVGhZNo
 ZaeOlBLBAEX+cAcVtOs/AkBicZOAPv84ABmFfyhXhYaAuacaJLq//jg+t+URUOg+
 XZS9naRmawEQxOkZQVoMeKgvu05+V4MniFqdQBINIkr5
------END RSA PRIVATE KEY-----`
+-----END RSA PRIVATE KEY-----` // #nosec G101 used only for testing
 	b, _ := pem.Decode([]byte(keyStr))
 	k, err := x509.ParsePKCS1PrivateKey(b.Bytes)
 	if err != nil {
