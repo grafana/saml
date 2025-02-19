@@ -1,3 +1,8 @@
+// SPDX-License-Identifier: BSD-2-Clause
+// Provenance-includes-location: https://github.com/crewjam/saml/blob/a32b643a25a46182499b1278293e265150056d89/saml.go
+// Provenance-includes-license: BSD-2-Clause
+// Provenance-includes-copyright: Ross Kinder
+
 // Package saml contains a partial implementation of the SAML standard in golang.
 // SAML is a standard for identity federation, i.e. either allowing a third party to authenticate your users or allowing third parties to rely on us to authenticate their users.
 //
