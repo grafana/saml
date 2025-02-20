@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 // Provenance-includes-location: https://github.com/crewjam/saml/blob/a32b643a25a46182499b1278293e265150056d89/example/trivial/trivial.go
 // Provenance-includes-license: BSD-2-Clause
-// Provenance-includes-copyright: Ross Kinder
+// Provenance-includes-copyright: 2015-2023 Ross Kinder
 
 // Package main contains an example service provider implementation.
 package main
