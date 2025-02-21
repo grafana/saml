@@ -1,3 +1,8 @@
+// SPDX-License-Identifier: BSD-2-Clause
+// Provenance-includes-location: https://github.com/crewjam/saml/blob/a32b643a25a46182499b1278293e265150056d89/xmlenc/xmlenc.go
+// Provenance-includes-license: BSD-2-Clause
+// Provenance-includes-copyright: 2015-2023 Ross Kinder
+
 // Package xmlenc is a partial implementation of the xmlenc standard
 // as described in https://www.w3.org/TR/2002/REC-xmlenc-core-20021210/Overview.html.
 // The purpose of this implementation is to support encrypted SAML assertions.
