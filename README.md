@@ -151,3 +151,7 @@ The SAML specification is a collection of PDFs (sadly):
 - [SAMLConformance](http://docs.oasis-open.org/security/saml/v2.0/saml-conformance-2.0-os.pdf) includes a support matrix for various parts of the protocol.
 
 [SAMLtest](https://samltest.id/) is a testing ground for SAML service and identity providers.
+
+## Security Issues
+
+Please refer to our [Security Policy](https://github.com/grafana/saml/security/policy) when reporting security issues.
