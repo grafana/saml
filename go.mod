@@ -1,6 +1,6 @@
 module github.com/grafana/saml
 
-go 1.19
+go 1.23.0
 
 require (
 	github.com/beevik/etree v1.2.0
@@ -13,7 +13,7 @@ require (
 	github.com/russellhaering/goxmldsig v1.4.0
 	github.com/stretchr/testify v1.10.0
 	github.com/zenazn/goji v1.0.1
-	golang.org/x/crypto v0.31.0
+	golang.org/x/crypto v0.35.0
 	gotest.tools v2.2.0+incompatible
 )
 
