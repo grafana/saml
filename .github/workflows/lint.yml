@@ -1,5 +1,7 @@
 name: lint
 
+permissions: {}
+
 on:
   push:
     branches: [ 'main' ]
@@ -11,8 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@v5
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@55c2c1448f86e01eaae002a5a3a9624417608d84 #v6.5.2
         with:
           version: v1.64.5
