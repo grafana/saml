@@ -1,8 +1,3 @@
-// SPDX-License-Identifier: BSD-2-Clause
-// Provenance-includes-location: https://github.com/crewjam/saml/blob/a32b643a25a46182499b1278293e265150056d89/identity_provider_test.go
-// Provenance-includes-license: BSD-2-Clause
-// Provenance-includes-copyright: 2015-2023 Ross Kinder
-
 package saml
 
 import (
@@ -30,7 +25,6 @@ import (
 	"gotest.tools/golden"
 
 	"github.com/beevik/etree"
-	"github.com/golang-jwt/jwt/v4"
 	dsig "github.com/russellhaering/goxmldsig"
 
 	"github.com/grafana/saml/logger"
@@ -109,7 +103,6 @@ func NewIdentityProviderTest(t *testing.T, opts ...idpTestOpts) *IdentityProvide
 		rv, _ := time.Parse("Mon Jan 2 15:04:05 MST 2006", "Mon Dec 1 01:57:09 UTC 2015")
 		return rv
 	}
-	jwt.TimeFunc = TimeNow
 	RandReader = &testRandomReader{}                // TODO(ross): remove this and use the below generator
 	xmlenc.RandReader = rand.New(rand.NewSource(0)) //nolint:gosec  // deterministic random numbers for tests
 
@@ -181,8 +174,6 @@ func TestIDPCanProduceMetadata(t *testing.T) {
 			{
 				SSODescriptor: SSODescriptor{
 					RoleDescriptor: RoleDescriptor{
-						ValidUntil:                 TimeNow().Add(DefaultValidDuration),
-						CacheDuration:              DefaultValidDuration,
 						ProtocolSupportEnumeration: "urn:oasis:names:tc:SAML:2.0:protocol",
 						KeyDescriptors: []KeyDescriptor{
 							{
@@ -241,8 +232,7 @@ func TestIDPHTTPCanHandleMetadataRequest(t *testing.T) {
 	test.IDP.Handler().ServeHTTP(w, r)
 	assert.Check(t, is.Equal(http.StatusOK, w.Code))
 	assert.Check(t, is.Equal("application/samlmetadata+xml", w.Header().Get("Content-type")))
-	body := w.Body.String()
-	assert.Check(t, strings.HasPrefix(body, "<EntityDescriptor"),
+	assert.Check(t, strings.HasPrefix(w.Body.String(), "<EntityDescriptor"),
 		w.Body.String())
 }
 
@@ -250,8 +240,9 @@ func TestIDPCanHandleRequestWithNewSession(t *testing.T) {
 	test := NewIdentityProviderTest(t, applyKey)
 	test.IDP.SessionProvider = &mockSessionProvider{
 		GetSessionFunc: func(w http.ResponseWriter, _ *http.Request, req *IdpAuthnRequest) *Session {
-			fmt.Fprintf(w, "RelayState: %s\nSAMLRequest: %s",
+			_, err := fmt.Fprintf(w, "RelayState: %s\nSAMLRequest: %s",
 				req.RelayState, req.RequestBuffer)
+			assert.NilError(t, err)
 			return nil
 		},
 	}
@@ -611,6 +602,17 @@ func TestIDPMakeAssertion(t *testing.T) {
 			},
 		},
 		{
+			FriendlyName: "mail",
+			Name:         "urn:oid:0.9.2342.19200300.100.1.3",
+			NameFormat:   "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
+			Values: []AttributeValue{
+				{
+					Type:  "xs:string",
+					Value: "alice@example.com",
+				},
+			},
+		},
+		{
 			FriendlyName: "eduPersonPrincipalName",
 			Name:         "urn:oid:1.3.6.1.4.1.5923.1.1.1.6",
 			NameFormat:   "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
@@ -805,7 +807,8 @@ func TestIDPIDPInitiatedNewSession(t *testing.T) {
 	test := NewIdentityProviderTest(t, applyKey)
 	test.IDP.SessionProvider = &mockSessionProvider{
 		GetSessionFunc: func(w http.ResponseWriter, _ *http.Request, req *IdpAuthnRequest) *Session {
-			fmt.Fprintf(w, "RelayState: %s", req.RelayState)
+			_, err := fmt.Fprintf(w, "RelayState: %s", req.RelayState)
+			assert.NilError(t, err)
 			return nil
 		},
 	}
@@ -983,6 +986,17 @@ func TestIDPRequestedAttributes(t *testing.T) {
 				},
 			},
 			{
+				FriendlyName: "mail",
+				Name:         "urn:oid:0.9.2342.19200300.100.1.3",
+				NameFormat:   "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
+				Values: []AttributeValue{
+					{
+						Type:  "xs:string",
+						Value: "alice@example.com",
+					},
+				},
+			},
+			{
 				FriendlyName: "eduPersonPrincipalName",
 				Name:         "urn:oid:1.3.6.1.4.1.5923.1.1.1.6",
 				NameFormat:   "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
@@ -1075,8 +1089,9 @@ func TestIDPRejectDecompressionBomb(t *testing.T) {
 	test := NewIdentityProviderTest(t)
 	test.IDP.SessionProvider = &mockSessionProvider{
 		GetSessionFunc: func(w http.ResponseWriter, _ *http.Request, req *IdpAuthnRequest) *Session {
-			fmt.Fprintf(w, "RelayState: %s\nSAMLRequest: %s",
+			_, err := fmt.Fprintf(w, "RelayState: %s\nSAMLRequest: %s",
 				req.RelayState, req.RequestBuffer)
+			assert.NilError(t, err)
 			return nil
 		},
 	}

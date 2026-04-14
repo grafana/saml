@@ -1,8 +1,3 @@
-// SPDX-License-Identifier: BSD-2-Clause
-// Provenance-includes-location: https://github.com/crewjam/saml/blob/a32b643a25a46182499b1278293e265150056d89/metadata.go
-// Provenance-includes-license: BSD-2-Clause
-// Provenance-includes-copyright: 2015-2023 Ross Kinder
-
 package saml
 
 import (
@@ -41,6 +36,55 @@ type EntitiesDescriptor struct {
 	Signature           *etree.Element
 	EntitiesDescriptors []EntitiesDescriptor `xml:"urn:oasis:names:tc:SAML:2.0:metadata EntitiesDescriptor"`
 	EntityDescriptors   []EntityDescriptor   `xml:"urn:oasis:names:tc:SAML:2.0:metadata EntityDescriptor"`
+}
+
+// MarshalXML implements xml.Marshaler
+func (m EntitiesDescriptor) MarshalXML(e *xml.Encoder, _ xml.StartElement) error {
+	var validUntil *RelaxedTime
+	var cacheDuration *Duration
+	if m.ValidUntil != nil {
+		vu := RelaxedTime(*m.ValidUntil)
+		validUntil = &vu
+	}
+	if m.CacheDuration != nil {
+		cd := Duration(*m.CacheDuration)
+		cacheDuration = &cd
+	}
+	type Alias EntitiesDescriptor
+	aux := &struct {
+		ValidUntil    *RelaxedTime `xml:"validUntil,attr,omitempty"`
+		CacheDuration *Duration    `xml:"cacheDuration,attr,omitempty"`
+		*Alias
+	}{
+		ValidUntil:    validUntil,
+		CacheDuration: cacheDuration,
+		Alias:         (*Alias)(&m),
+	}
+	return e.Encode(aux)
+}
+
+// UnmarshalXML implements xml.Unmarshaler
+func (m *EntitiesDescriptor) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	type Alias EntitiesDescriptor
+	aux := &struct {
+		ValidUntil    *RelaxedTime `xml:"validUntil,attr,omitempty"`
+		CacheDuration *Duration    `xml:"cacheDuration,attr,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(m),
+	}
+	if err := d.DecodeElement(aux, &start); err != nil {
+		return err
+	}
+	if aux.ValidUntil != nil {
+		t := time.Time(*aux.ValidUntil)
+		m.ValidUntil = &t
+	}
+	if aux.CacheDuration != nil {
+		d := time.Duration(*aux.CacheDuration)
+		m.CacheDuration = &d
+	}
+	return nil
 }
 
 // Metadata as been renamed to EntityDescriptor
@@ -149,7 +193,7 @@ type ContactPerson struct {
 // See http://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf §2.4.1
 type RoleDescriptor struct {
 	ID                         string        `xml:",attr,omitempty"`
-	ValidUntil                 time.Time     `xml:"validUntil,attr,omitempty"`
+	ValidUntil                 *time.Time    `xml:"validUntil,attr,omitempty"`
 	CacheDuration              time.Duration `xml:"cacheDuration,attr,omitempty"`
 	ProtocolSupportEnumeration string        `xml:"protocolSupportEnumeration,attr"`
 	ErrorURL                   string        `xml:"errorURL,attr,omitempty"`
@@ -326,9 +370,9 @@ type SSODescriptor struct {
 //
 // See http://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf §2.4.3
 type IDPSSODescriptor struct {
+	XMLName xml.Name `xml:"urn:oasis:names:tc:SAML:2.0:metadata IDPSSODescriptor"`
 	SSODescriptor
-	XMLName                 xml.Name `xml:"urn:oasis:names:tc:SAML:2.0:metadata IDPSSODescriptor"`
-	WantAuthnRequestsSigned *bool    `xml:",attr"`
+	WantAuthnRequestsSigned *bool `xml:",attr"`
 
 	SingleSignOnServices       []Endpoint  `xml:"SingleSignOnService"`
 	ArtifactResolutionServices []Endpoint  `xml:"ArtifactResolutionService"`
@@ -338,82 +382,16 @@ type IDPSSODescriptor struct {
 	Attributes                 []Attribute `xml:"Attribute"`
 }
 
-// MarshalXML implements xml.Marshaler
-func (m IDPSSODescriptor) MarshalXML(e *xml.Encoder, _ xml.StartElement) error {
-	type Alias IDPSSODescriptor
-	aux := &struct {
-		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
-		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
-		*Alias
-	}{
-		ValidUntil:    RelaxedTime(m.ValidUntil),
-		CacheDuration: Duration(m.CacheDuration),
-		Alias:         (*Alias)(&m),
-	}
-	return e.Encode(aux)
-}
-
-// UnmarshalXML implements xml.Unmarshaler
-func (m *IDPSSODescriptor) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	type Alias IDPSSODescriptor
-	aux := &struct {
-		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
-		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
-		*Alias
-	}{
-		Alias: (*Alias)(m),
-	}
-	if err := d.DecodeElement(aux, &start); err != nil {
-		return err
-	}
-	m.ValidUntil = time.Time(aux.ValidUntil)
-	m.CacheDuration = time.Duration(aux.CacheDuration)
-	return nil
-}
-
 // SPSSODescriptor represents the SAML SPSSODescriptorType object.
 //
 // See http://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf §2.4.2
 type SPSSODescriptor struct {
+	XMLName xml.Name `xml:"urn:oasis:names:tc:SAML:2.0:metadata SPSSODescriptor"`
 	SSODescriptor
-	XMLName                    xml.Name                    `xml:"urn:oasis:names:tc:SAML:2.0:metadata SPSSODescriptor"`
 	AuthnRequestsSigned        *bool                       `xml:",attr"`
 	WantAssertionsSigned       *bool                       `xml:",attr"`
 	AssertionConsumerServices  []IndexedEndpoint           `xml:"AssertionConsumerService"`
 	AttributeConsumingServices []AttributeConsumingService `xml:"AttributeConsumingService"`
-}
-
-// MarshalXML implements xml.Marshaler
-func (m SPSSODescriptor) MarshalXML(e *xml.Encoder, _ xml.StartElement) error {
-	type Alias SPSSODescriptor
-	aux := &struct {
-		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
-		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
-		*Alias
-	}{
-		ValidUntil:    RelaxedTime(m.ValidUntil),
-		CacheDuration: Duration(m.CacheDuration),
-		Alias:         (*Alias)(&m),
-	}
-	return e.Encode(aux)
-}
-
-// UnmarshalXML implements xml.Unmarshaler
-func (m *SPSSODescriptor) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	type Alias SPSSODescriptor
-	aux := &struct {
-		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
-		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
-		*Alias
-	}{
-		Alias: (*Alias)(m),
-	}
-	if err := d.DecodeElement(aux, &start); err != nil {
-		return err
-	}
-	m.ValidUntil = time.Time(aux.ValidUntil)
-	m.CacheDuration = time.Duration(aux.CacheDuration)
-	return nil
 }
 
 // AttributeConsumingService represents the SAML AttributeConsumingService object.
@@ -440,43 +418,9 @@ type RequestedAttribute struct {
 // See http://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf §2.4.5
 type AuthnAuthorityDescriptor struct {
 	RoleDescriptor
-	XMLName                    xml.Name       `xml:"urn:oasis:names:tc:SAML:2.0:metadata AuthnAuthorityDescriptor"`
 	AuthnQueryServices         []Endpoint     `xml:"AuthnQueryService"`
 	AssertionIDRequestServices []Endpoint     `xml:"AssertionIDRequestService"`
 	NameIDFormats              []NameIDFormat `xml:"NameIDFormat"`
-}
-
-// MarshalXML implements xml.Marshaler
-func (m AuthnAuthorityDescriptor) MarshalXML(e *xml.Encoder, _ xml.StartElement) error {
-	type Alias AuthnAuthorityDescriptor
-	aux := &struct {
-		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
-		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
-		*Alias
-	}{
-		ValidUntil:    RelaxedTime(m.ValidUntil),
-		CacheDuration: Duration(m.CacheDuration),
-		Alias:         (*Alias)(&m),
-	}
-	return e.Encode(aux)
-}
-
-// UnmarshalXML implements xml.Unmarshaler
-func (m *AuthnAuthorityDescriptor) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	type Alias AuthnAuthorityDescriptor
-	aux := &struct {
-		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
-		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
-		*Alias
-	}{
-		Alias: (*Alias)(m),
-	}
-	if err := d.DecodeElement(aux, &start); err != nil {
-		return err
-	}
-	m.ValidUntil = time.Time(aux.ValidUntil)
-	m.CacheDuration = time.Duration(aux.CacheDuration)
-	return nil
 }
 
 // PDPDescriptor represents the SAML PDPDescriptor object.
@@ -484,43 +428,9 @@ func (m *AuthnAuthorityDescriptor) UnmarshalXML(d *xml.Decoder, start xml.StartE
 // See http://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf §2.4.6
 type PDPDescriptor struct {
 	RoleDescriptor
-	XMLName                    xml.Name       `xml:"urn:oasis:names:tc:SAML:2.0:metadata PDPDescriptor"`
 	AuthzServices              []Endpoint     `xml:"AuthzService"`
 	AssertionIDRequestServices []Endpoint     `xml:"AssertionIDRequestService"`
 	NameIDFormats              []NameIDFormat `xml:"NameIDFormat"`
-}
-
-// MarshalXML implements xml.Marshaler
-func (m PDPDescriptor) MarshalXML(e *xml.Encoder, _ xml.StartElement) error {
-	type Alias PDPDescriptor
-	aux := &struct {
-		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
-		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
-		*Alias
-	}{
-		ValidUntil:    RelaxedTime(m.ValidUntil),
-		CacheDuration: Duration(m.CacheDuration),
-		Alias:         (*Alias)(&m),
-	}
-	return e.Encode(aux)
-}
-
-// UnmarshalXML implements xml.Unmarshaler
-func (m *PDPDescriptor) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	type Alias PDPDescriptor
-	aux := &struct {
-		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
-		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
-		*Alias
-	}{
-		Alias: (*Alias)(m),
-	}
-	if err := d.DecodeElement(aux, &start); err != nil {
-		return err
-	}
-	m.ValidUntil = time.Time(aux.ValidUntil)
-	m.CacheDuration = time.Duration(aux.CacheDuration)
-	return nil
 }
 
 // AttributeAuthorityDescriptor represents the SAML AttributeAuthorityDescriptor object.
@@ -528,45 +438,11 @@ func (m *PDPDescriptor) UnmarshalXML(d *xml.Decoder, start xml.StartElement) err
 // See http://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf §2.4.7
 type AttributeAuthorityDescriptor struct {
 	RoleDescriptor
-	XMLName                    xml.Name       `xml:"urn:oasis:names:tc:SAML:2.0:metadata AttributeAuthorityDescriptor"`
 	AttributeServices          []Endpoint     `xml:"AttributeService"`
 	AssertionIDRequestServices []Endpoint     `xml:"AssertionIDRequestService"`
 	NameIDFormats              []NameIDFormat `xml:"NameIDFormat"`
 	AttributeProfiles          []string       `xml:"AttributeProfile"`
 	Attributes                 []Attribute    `xml:"Attribute"`
-}
-
-// MarshalXML implements xml.Marshaler
-func (m AttributeAuthorityDescriptor) MarshalXML(e *xml.Encoder, _ xml.StartElement) error {
-	type Alias AttributeAuthorityDescriptor
-	aux := &struct {
-		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
-		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
-		*Alias
-	}{
-		ValidUntil:    RelaxedTime(m.ValidUntil),
-		CacheDuration: Duration(m.CacheDuration),
-		Alias:         (*Alias)(&m),
-	}
-	return e.Encode(aux)
-}
-
-// UnmarshalXML implements xml.Unmarshaler
-func (m *AttributeAuthorityDescriptor) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	type Alias AttributeAuthorityDescriptor
-	aux := &struct {
-		ValidUntil    RelaxedTime `xml:"validUntil,attr,omitempty"`
-		CacheDuration Duration    `xml:"cacheDuration,attr,omitempty"`
-		*Alias
-	}{
-		Alias: (*Alias)(m),
-	}
-	if err := d.DecodeElement(aux, &start); err != nil {
-		return err
-	}
-	m.ValidUntil = time.Time(aux.ValidUntil)
-	m.CacheDuration = time.Duration(aux.CacheDuration)
-	return nil
 }
 
 // AffiliationDescriptor represents the SAML AffiliationDescriptor object.

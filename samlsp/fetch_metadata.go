@@ -1,8 +1,3 @@
-// SPDX-License-Identifier: BSD-2-Clause
-// Provenance-includes-location: https://github.com/crewjam/saml/blob/a32b643a25a46182499b1278293e265150056d89/samlsp/fetch_metadata.go
-// Provenance-includes-license: BSD-2-Clause
-// Provenance-includes-copyright: 2015-2023 Ross Kinder
-
 package samlsp
 
 import (
@@ -10,11 +5,11 @@ import (
 	"context"
 	"encoding/xml"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 
-	"github.com/crewjam/httperr"
 	xrv "github.com/mattermost/xml-roundtrip-validator"
 
 	"github.com/grafana/saml/logger"
@@ -74,7 +69,7 @@ func FetchMetadata(ctx context.Context, httpClient *http.Client, metadataURL url
 		}
 	}()
 	if resp.StatusCode >= 400 {
-		return nil, httperr.Response(*resp)
+		return nil, fmt.Errorf("failed to fetch metadata: unexpected status code %d", resp.StatusCode)
 	}
 
 	data, err := io.ReadAll(resp.Body)

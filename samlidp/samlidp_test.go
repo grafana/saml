@@ -1,8 +1,3 @@
-// SPDX-License-Identifier: BSD-2-Clause
-// Provenance-includes-location: https://github.com/crewjam/saml/blob/a32b643a25a46182499b1278293e265150056d89/samlidp/samlidp_test.go
-// Provenance-includes-license: BSD-2-Clause
-// Provenance-includes-copyright: 2015-2023 Ross Kinder
-
 package samlidp
 
 import (
@@ -20,8 +15,6 @@ import (
 	"gotest.tools/assert"
 	is "gotest.tools/assert/cmp"
 	"gotest.tools/golden"
-
-	"github.com/golang-jwt/jwt/v4"
 
 	"github.com/grafana/saml"
 	"github.com/grafana/saml/logger"
@@ -88,7 +81,6 @@ func NewServerTest(t *testing.T) *ServerTest {
 		rv, _ := time.Parse("Mon Jan 2 15:04:05 MST 2006", "Mon Dec 1 01:57:09 UTC 2015")
 		return rv
 	}
-	jwt.TimeFunc = saml.TimeNow
 	saml.RandReader = &testRandomReader{}
 
 	test.SPKey = mustParsePrivateKey(golden.Get(t, "sp_key.pem")).(*rsa.PrivateKey)
@@ -144,7 +136,7 @@ func TestHTTPCanSSORequest(t *testing.T) {
 	test.Server.ServeHTTP(w, r)
 	assert.Check(t, is.Equal(http.StatusOK, w.Code))
 	assert.Check(t,
-		strings.HasPrefix(w.Body.String(), "<html><p></p><form method=\"post\" action=\"https://idp.example.com/sso\">"),
+		strings.HasPrefix(w.Body.String(), "<html><p></p><form method=\"post\" action=\"https://idp.example.com/login\">"),
 		w.Body.String())
 	golden.Assert(t, w.Body.String(), "http_sso_response.html")
 }

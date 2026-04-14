@@ -1,8 +1,3 @@
-// SPDX-License-Identifier: BSD-2-Clause
-// Provenance-includes-location: https://github.com/crewjam/saml/blob/a32b643a25a46182499b1278293e265150056d89/saml.go
-// Provenance-includes-license: BSD-2-Clause
-// Provenance-includes-copyright: 2015-2023 Ross Kinder
-
 // Package saml contains a partial implementation of the SAML standard in golang.
 // SAML is a standard for identity federation, i.e. either allowing a third party to authenticate your users or allowing third parties to rely on us to authenticate their users.
 //
@@ -154,7 +149,7 @@
 //
 // This package supports the Web SSO profile. Message flows from the service provider to the IDP are supported using the HTTP Redirect binding and the HTTP POST binding. Message flows from the IDP to the service provider are supported via the HTTP POST binding.
 //
-// The package can produce signed SAML assertions, and can validate both signed and encrypted SAML assertions. It does not support signed or encrypted requests.
+// The package can produce signed SAML assertions, and can validate both signed and encrypted SAML assertions.
 //
 // # RelayState
 //

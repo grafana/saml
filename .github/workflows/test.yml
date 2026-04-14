@@ -1,7 +1,5 @@
 name: test
 
-permissions: {}
-
 on:
   push:
     branches: [ 'main' ]
@@ -12,12 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: [ '1.23.x', '1.24.x' ]
+        go: [ '1.22.x', '1.23.x', '1.24.x']
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go }}
+      - run: go version
       - run: go test -v ./...

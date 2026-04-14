@@ -1,8 +1,3 @@
-// SPDX-License-Identifier: BSD-2-Clause
-// Provenance-includes-location: https://github.com/crewjam/saml/blob/a32b643a25a46182499b1278293e265150056d89/xmlenc/digest.go
-// Provenance-includes-license: BSD-2-Clause
-// Provenance-includes-copyright: 2015-2023 Ross Kinder
-
 package xmlenc
 
 import (
@@ -11,7 +6,8 @@ import (
 	"crypto/sha512"
 	"hash"
 
-	"golang.org/x/crypto/ripemd160" //nolint:staticcheck,gosec // We should support this for legacy reasons.
+	//nolint:staticcheck,gosec // We should support this for legacy reasons.
+	"golang.org/x/crypto/ripemd160"
 )
 
 type digestMethod struct {

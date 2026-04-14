@@ -1,8 +1,3 @@
-// SPDX-License-Identifier: BSD-2-Clause
-// Provenance-includes-location: https://github.com/crewjam/saml/blob/a32b643a25a46182499b1278293e265150056d89/samlsp/session_cookie.go
-// Provenance-includes-license: BSD-2-Clause
-// Provenance-includes-copyright: 2015-2023 Ross Kinder
-
 package samlsp
 
 import (
@@ -26,6 +21,7 @@ type CookieSessionProvider struct {
 	Secure   bool
 	SameSite http.SameSite
 	MaxAge   time.Duration
+	Path     string
 	Codec    SessionCodec
 }
 
@@ -48,6 +44,11 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 		return err
 	}
 
+	path := c.Path
+	if path == "" {
+		path = "/"
+	}
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     c.Name,
 		Domain:   c.Domain,
@@ -56,7 +57,7 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 		HttpOnly: c.HTTPOnly,
 		Secure:   c.Secure || r.URL.Scheme == "https",
 		SameSite: c.SameSite,
-		Path:     "/",
+		Path:     path,
 	})
 	return nil
 }

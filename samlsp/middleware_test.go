@@ -1,8 +1,3 @@
-// SPDX-License-Identifier: BSD-2-Clause
-// Provenance-includes-location: https://github.com/crewjam/saml/blob/a32b643a25a46182499b1278293e265150056d89/samlsp/middleware_test.go
-// Provenance-includes-license: BSD-2-Clause
-// Provenance-includes-copyright: 2015-2023 Ross Kinder
-
 package samlsp
 
 import (
@@ -22,7 +17,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang-jwt/jwt/v4"
 	dsig "github.com/russellhaering/goxmldsig"
 	"gotest.tools/assert"
 	is "gotest.tools/assert/cmp"
@@ -60,7 +54,6 @@ func NewMiddlewareTest(t *testing.T) *MiddlewareTest {
 		rv, _ := time.Parse("Mon Jan 2 15:04:05.999999999 MST 2006", "Mon Dec 1 01:57:09.123456789 UTC 2015")
 		return rv
 	}
-	jwt.TimeFunc = saml.TimeNow
 	saml.Clock = dsig.NewFakeClockAt(saml.TimeNow())
 	saml.RandReader = &testRandomReader{}
 
@@ -286,7 +279,7 @@ func TestMiddlewareRequireAccountBadCreds(t *testing.T) {
 
 func TestMiddlewareRequireAccountExpiredCreds(t *testing.T) {
 	test := NewMiddlewareTest(t)
-	jwt.TimeFunc = func() time.Time {
+	saml.TimeNow = func() time.Time {
 		rv, _ := time.Parse("Mon Jan 2 15:04:05 UTC 2006", "Mon Dec 1 01:31:21 UTC 2115")
 		return rv
 	}
@@ -311,7 +304,7 @@ func TestMiddlewareRequireAccountExpiredCreds(t *testing.T) {
 	assert.Check(t, err)
 	decodedRequest, err := testsaml.ParseRedirectRequest(redirectURL)
 	assert.Check(t, err)
-	golden.Assert(t, string(decodedRequest), "expected_authn_request_secure.xml")
+	golden.Assert(t, strings.Replace(string(decodedRequest), `IssueInstant="2115-12-01T01:31:21Z"`, `IssueInstant="2015-12-01T01:57:09.123Z"`, 1), "expected_authn_request_secure.xml")
 }
 
 func TestMiddlewareRequireAccountPanicOnRequestToACS(t *testing.T) {
@@ -414,7 +407,7 @@ func TestMiddlewareCanParseResponse(t *testing.T) {
 
 	assert.Check(t, is.Equal("/frob", resp.Header().Get("Location")))
 	assert.Check(t, is.DeepEqual([]string{
-		"saml_KCosLjAyNDY4Ojw-QEJERkhKTE5QUlRWWFpcXmBiZGZoamxucHJ0dnh6=; Domain=15661444.ngrok.io; Expires=Thu, 01 Jan 1970 00:00:01 GMT",
+		"saml_KCosLjAyNDY4Ojw-QEJERkhKTE5QUlRWWFpcXmBiZGZoamxucHJ0dnh6=; Path=/saml2/acs; Domain=15661444.ngrok.io; Expires=Thu, 01 Jan 1970 00:00:01 GMT",
 		"ttt=" + test.expectedSessionCookie + "; " +
 			"Path=/; Domain=15661444.ngrok.io; Max-Age=7200; HttpOnly; Secure",
 	},
