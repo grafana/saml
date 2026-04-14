@@ -304,12 +304,12 @@ func (r *AuthnRequest) Redirect(relayState string, sp *ServiceProvider) (*url.UR
 	}
 
 	// We can't depend on Query().set() as order matters for signing
-	reqString := string(w.Bytes())
+	reqString := requestStr.String()
 	query := rv.RawQuery
 	if len(query) > 0 {
-		query += "&" + string(samlRequest) + "=" + url.QueryEscape(requestStr.String())
+		query += "&" + string(samlRequest) + "=" + url.QueryEscape(reqString)
 	} else {
-		query += string(samlRequest) + "=" + url.QueryEscape(requestStr.String())
+		query += string(samlRequest) + "=" + url.QueryEscape(reqString)
 	}
 
 	if relayState != "" {

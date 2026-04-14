@@ -19,7 +19,6 @@ func TestSigningAndValidation(t *testing.T) {
 		desc         string
 		relayState   string
 		requestType  reqType
-		wantErr      bool
 		wantRawQuery string
 	}
 
@@ -54,6 +53,7 @@ func TestSigningAndValidation(t *testing.T) {
 	}
 
 	err := xml.Unmarshal(idpMetadata, &s.IDPMetadata)
+	assert.NilError(t, err, "error unmarshalling metadata: %s", err)
 	idpCert, err := s.getIDPSigningCerts()
 
 	assert.Check(t, err == nil)
@@ -102,6 +102,7 @@ func TestInvalidSignatureAlgorithm(t *testing.T) {
 	}
 
 	err := xml.Unmarshal(idpMetadata, &s.IDPMetadata)
+	assert.NilError(t, err, "error unmarshalling metadata: %s", err)
 	idpCert, err := s.getIDPSigningCerts()
 
 	assert.Check(t, err == nil)
