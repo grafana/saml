@@ -1839,17 +1839,26 @@ func findChild(parentEl *etree.Element, childNS string, childTag string) (*etree
 
 func elementToBytes(el *etree.Element) ([]byte, error) {
 	namespaces := map[string]string{}
-	for _, childEl := range el.FindElements("//*") {
-		ns := childEl.NamespaceURI()
-		if ns != "" {
-			namespaces[childEl.Space] = ns
+	currentElement := el
+	// Retrieve namespaces from the element itself and its parents
+	for currentElement != nil {
+		// Iterate over the attributes of the element, if an attribute is a namespace declaration, add it to the list of namespaces
+		for _, attr := range currentElement.Attr {
+			// "xmlns" is either the space or the key of the attribute, depending on whether it is a default namespace declaration or not
+			if attr.Space == "xmlns" || attr.Key == "xmlns" {
+				// If the namespace is already present in the list, it means that a child element has overridden it, so skip it
+				if _, prefixExists := namespaces[attr.FullKey()]; !prefixExists {
+					namespaces[attr.FullKey()] = attr.Value
+				}
+			}
 		}
+		currentElement = currentElement.Parent()
 	}
 
 	doc := etree.NewDocument()
 	doc.SetRoot(el.Copy())
-	for space, uri := range namespaces {
-		doc.Root().CreateAttr("xmlns:"+space, uri)
+	for prefix, uri := range namespaces {
+		doc.Root().CreateAttr(prefix, uri)
 	}
 
 	return doc.WriteToBytes()
