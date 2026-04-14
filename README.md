@@ -1,8 +1,8 @@
 # SAML
 
-[![](https://godoc.org/github.com/grafana/saml?status.svg)](http://godoc.org/github.com/grafana/saml)
+[![](https://godoc.org/github.com/crewjam/saml?status.svg)](http://godoc.org/github.com/crewjam/saml)
 
-![Build Status](https://github.com/grafana/saml/workflows/Presubmit/badge.svg)
+![Build Status](https://github.com/crewjam/saml/actions/workflows/test.yml/badge.svg)
 
 Package saml contains a partial implementation of the SAML standard in golang.
 SAML is a standard for identity federation, i.e. either allowing a third party to authenticate your users or allowing third parties to rely on us to authenticate their users.
@@ -54,7 +54,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/grafana/saml/samlsp"
+	"github.com/crewjam/saml/samlsp"
 )
 
 func hello(w http.ResponseWriter, r *http.Request) {
@@ -130,7 +130,7 @@ The SAML standard is huge and complex with many dark corners and strange, unused
 
 This package supports the **Web SSO** profile. Message flows from the service provider to the IDP are supported using the **HTTP Redirect** binding and the **HTTP POST** binding. Message flows from the IDP to the service provider are supported via the **HTTP POST** binding.
 
-The package can produce signed SAML assertions, and can validate both signed and encrypted SAML assertions. It does not support signed or encrypted requests.
+The package can produce signed SAML assertions, and can validate both signed and encrypted SAML assertions.
 
 ## RelayState
 
@@ -154,4 +154,4 @@ The SAML specification is a collection of PDFs (sadly):
 
 ## Security Issues
 
-Please refer to our [Security Policy](https://github.com/grafana/saml/security/policy) when reporting security issues.
+Please do not report security issues in the issue tracker. Rather, please contact me directly at ross@kndr.org ([PGP Key `78B6038B3B9DFB88`](https://keybase.io/crewjam)). If your issue is *not* a security issue, please use the issue tracker so other contributors can help.

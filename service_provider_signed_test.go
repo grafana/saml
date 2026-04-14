@@ -1,16 +1,17 @@
-// SPDX-License-Identifier: BSD-2-Clause
-// Provenance-includes-location: https://github.com/crewjam/saml/blob/a32b643a25a46182499b1278293e265150056d89/service_provider_signed_test.go
-// Provenance-includes-license: BSD-2-Clause
-// Provenance-includes-copyright: 2015-2023 Ross Kinder
-
 package saml
 
 import (
+	"bytes"
+	"compress/flate"
 	"crypto/rsa"
 	"encoding/base64"
 	"encoding/xml"
 	"net/url"
+	"strings"
 	"testing"
+	"time"
+
+	"github.com/beevik/etree"
 
 	dsig "github.com/russellhaering/goxmldsig"
 	"gotest.tools/assert"
@@ -58,8 +59,7 @@ func TestSigningAndValidation(t *testing.T) {
 	}
 
 	err := xml.Unmarshal(idpMetadata, &s.IDPMetadata)
-	assert.NilError(t, err)
-
+	assert.NilError(t, err, "error unmarshalling metadata: %s", err)
 	idpCert, err := s.getIDPSigningCerts()
 
 	assert.Check(t, err == nil)
@@ -108,8 +108,7 @@ func TestInvalidSignatureAlgorithm(t *testing.T) {
 	}
 
 	err := xml.Unmarshal(idpMetadata, &s.IDPMetadata)
-	assert.NilError(t, err)
-
+	assert.NilError(t, err, "error unmarshalling metadata: %s", err)
 	idpCert, err := s.getIDPSigningCerts()
 
 	assert.Check(t, err == nil)
@@ -122,4 +121,90 @@ func TestInvalidSignatureAlgorithm(t *testing.T) {
 
 	err = s.validateQuerySig(query)
 	assert.Error(t, err, "unsupported signature algorithm: http://www.w3.org/2000/09/xmldsig#rsa-sha384")
+}
+
+func TestRedirectRequestsEscapeRelayStateAndValidateDetachedSignature(t *testing.T) {
+	idpMetadata := golden.Get(t, "SP_IDPMetadata_signing")
+	s := ServiceProvider{
+		Key:             mustParsePrivateKey(golden.Get(t, "idp_key.pem")).(*rsa.PrivateKey),
+		Certificate:     mustParseCertificate(golden.Get(t, "idp_cert.pem")),
+		MetadataURL:     mustParseURL("https://15661444.ngrok.io/saml2/metadata"),
+		AcsURL:          mustParseURL("https://15661444.ngrok.io/saml2/acs"),
+		SignatureMethod: dsig.RSASHA1SignatureMethod,
+	}
+
+	err := xml.Unmarshal(idpMetadata, &s.IDPMetadata)
+	assert.NilError(t, err, "error unmarshalling metadata: %s", err)
+
+	relayState := "relay state+plus/slash"
+
+	authRedirectURL, err := s.MakeRedirectAuthenticationRequest(relayState)
+	assert.NilError(t, err, "error creating auth redirect request: %s", err)
+	assert.Assert(t, strings.Contains(authRedirectURL.RawQuery, "RelayState="+url.QueryEscape(relayState)))
+	authQuery, err := url.ParseQuery(authRedirectURL.RawQuery)
+	assert.NilError(t, err, "error parsing auth query: %s", err)
+	assert.NilError(t, s.validateQuerySig(authQuery), "error validating auth query: %s")
+
+	logoutRedirectURL, err := s.MakeRedirectLogoutRequest("ross@octolabs.io", relayState)
+	assert.NilError(t, err, "error creating logout redirect request: %s", err)
+	assert.Assert(t, strings.Contains(logoutRedirectURL.RawQuery, "RelayState="+url.QueryEscape(relayState)))
+	logoutQuery, err := url.ParseQuery(logoutRedirectURL.RawQuery)
+	assert.NilError(t, err, "error parsing logout query: %s", err)
+	assert.NilError(t, s.validateQuerySig(logoutQuery), "error validating logout query: %s")
+}
+
+func TestValidateLogoutResponseRedirectAcceptsDetachedSignatureWithoutEmbeddedSignature(t *testing.T) {
+	idpMetadata := golden.Get(t, "SP_IDPMetadata_signing")
+	s := ServiceProvider{
+		Key:             mustParsePrivateKey(golden.Get(t, "idp_key.pem")).(*rsa.PrivateKey),
+		Certificate:     mustParseCertificate(golden.Get(t, "idp_cert.pem")),
+		MetadataURL:     mustParseURL("https://15661444.ngrok.io/saml2/metadata"),
+		SloURL:          mustParseURL("https://15661444.ngrok.io/saml2/slo"),
+		IDPMetadata:     &EntityDescriptor{},
+		SignatureMethod: dsig.RSASHA1SignatureMethod,
+	}
+
+	err := xml.Unmarshal(idpMetadata, &s.IDPMetadata)
+	assert.NilError(t, err, "error unmarshalling metadata: %s", err)
+
+	resp := LogoutResponse{
+		ID:           "id-logout-response",
+		InResponseTo: "id-logout-request",
+		Version:      "2.0",
+		IssueInstant: time.Now(),
+		Destination:  s.SloURL.String(),
+		Issuer: &Issuer{
+			Format: "urn:oasis:names:tc:SAML:2.0:nameid-format:entity",
+			Value:  s.IDPMetadata.EntityID,
+		},
+		Status: Status{
+			StatusCode: StatusCode{
+				Value: StatusSuccess,
+			},
+		},
+	}
+
+	encodedResponse := deflatedBase64(t, resp.Element())
+	rawQuery := "SAMLResponse=" + url.QueryEscape(encodedResponse)
+	rawQuery, err = s.signQuery(samlResponse, rawQuery, encodedResponse, "")
+	assert.NilError(t, err, "error signing logout response query: %s", err)
+
+	query, err := url.ParseQuery(rawQuery)
+	assert.NilError(t, err, "error parsing query: %s", err)
+	assert.NilError(t, s.ValidateLogoutResponseRedirect(query), "detached-signature validation should succeed without embedded signature")
+}
+
+func deflatedBase64(t *testing.T, el *etree.Element) string {
+	t.Helper()
+
+	var buf bytes.Buffer
+	encoder := base64.NewEncoder(base64.StdEncoding, &buf)
+	compressor, _ := flate.NewWriter(encoder, 9)
+	doc := etree.NewDocument()
+	doc.SetRoot(el)
+	_, err := doc.WriteTo(compressor)
+	assert.NilError(t, err, "error serializing XML: %s", err)
+	assert.NilError(t, compressor.Close(), "error closing flate writer: %s")
+	assert.NilError(t, encoder.Close(), "error closing base64 encoder: %s")
+	return buf.String()
 }
