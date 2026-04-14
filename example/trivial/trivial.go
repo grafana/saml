@@ -23,7 +23,7 @@ func hello(w http.ResponseWriter, r *http.Request) {
 
 func logout(w http.ResponseWriter, r *http.Request) {
 	nameID := samlsp.AttributeFromContext(r.Context(), "urn:oasis:names:tc:SAML:attribute:subject-id")
-	url, err := samlMiddleware.ServiceProvider.MakeRedirectLogoutRequest(nameID, "")
+	url, err := samlMiddleware.ServiceProvider.MakeRedirectLogoutRequest(nameID, "", "")
 	if err != nil {
 		panic(err) // TODO handle error
 	}

@@ -639,16 +639,16 @@ func (sp *ServiceProvider) SignAuthnRequest(req *AuthnRequest) error {
 // MakePostAuthenticationRequest creates a SAML authentication request using
 // the HTTP-POST binding. It returns HTML text representing an HTML form that
 // can be sent presented to a browser to initiate the login process.
-func (sp *ServiceProvider) MakePostAuthenticationRequest(relayState string) ([]byte, error) {
+func (sp *ServiceProvider) MakePostAuthenticationRequest(relayState, nonce string) ([]byte, error) {
 	req, err := sp.MakeAuthenticationRequest(sp.GetSSOBindingLocation(HTTPPostBinding), HTTPPostBinding, HTTPPostBinding)
 	if err != nil {
 		return nil, err
 	}
-	return req.Post(relayState), nil
+	return req.Post(relayState, nonce), nil
 }
 
 // Post returns an HTML form suitable for using the HTTP-POST binding with the request
-func (r *AuthnRequest) Post(relayState string) []byte {
+func (r *AuthnRequest) Post(relayState, nonce string) []byte {
 	doc := etree.NewDocument()
 	doc.SetRoot(r.Element())
 	reqBuf, err := doc.WriteToBytes()
@@ -663,16 +663,18 @@ func (r *AuthnRequest) Post(relayState string) []byte {
 		`<input type="hidden" name="RelayState" value="{{.RelayState}}" />` +
 		`<input id="SAMLSubmitButton" type="submit" value="Submit" />` +
 		`</form>` +
-		`<script>document.getElementById('SAMLSubmitButton').style.visibility="hidden";` +
+		`<script{{if .Nonce}} nonce="{{.Nonce}}"{{end}}>document.getElementById('SAMLSubmitButton').style.visibility="hidden";` +
 		`document.getElementById('SAMLRequestForm').submit();</script>`))
 	data := struct {
 		URL         string
 		SAMLRequest string
 		RelayState  string
+		Nonce       string
 	}{
 		URL:         r.Destination,
 		SAMLRequest: encodedReqBuf,
 		RelayState:  relayState,
+		Nonce:       nonce,
 	}
 
 	rv := bytes.Buffer{}
@@ -1358,7 +1360,7 @@ func (sp *ServiceProvider) SignLogoutRequest(req *LogoutRequest) error {
 }
 
 // MakeLogoutRequest produces a new LogoutRequest object for idpURL.
-func (sp *ServiceProvider) MakeLogoutRequest(idpURL, nameID string) (*LogoutRequest, error) {
+func (sp *ServiceProvider) MakeLogoutRequest(idpURL, nameID, sessionIndex string) (*LogoutRequest, error) {
 
 	req := LogoutRequest{
 		ID:           fmt.Sprintf("id-%x", randomBytes(20)),
@@ -1376,6 +1378,9 @@ func (sp *ServiceProvider) MakeLogoutRequest(idpURL, nameID string) (*LogoutRequ
 			SPNameQualifier: sp.Metadata().EntityID,
 		},
 	}
+	if sessionIndex != "" {
+		req.SessionIndex = &SessionIndex{Value: sessionIndex}
+	}
 	if sp.SignatureMethod != "" {
 		if err := sp.SignLogoutRequest(&req); err != nil {
 			return nil, err
@@ -1387,8 +1392,8 @@ func (sp *ServiceProvider) MakeLogoutRequest(idpURL, nameID string) (*LogoutRequ
 // MakeRedirectLogoutRequest creates a SAML authentication request using
 // the HTTP-Redirect binding. It returns a URL that we will redirect the user to
 // in order to start the auth process.
-func (sp *ServiceProvider) MakeRedirectLogoutRequest(nameID, relayState string) (*url.URL, error) {
-	req, err := sp.MakeLogoutRequest(sp.GetSLOBindingLocation(HTTPRedirectBinding), nameID)
+func (sp *ServiceProvider) MakeRedirectLogoutRequest(nameID, relayState, sessionIndex string) (*url.URL, error) {
+	req, err := sp.MakeLogoutRequest(sp.GetSLOBindingLocation(HTTPRedirectBinding), nameID, sessionIndex)
 	if err != nil {
 		return nil, err
 	}
@@ -1442,8 +1447,8 @@ func (r *LogoutRequest) Redirect(relayState string, sp *ServiceProvider) (*url.U
 // MakePostLogoutRequest creates a SAML authentication request using
 // the HTTP-POST binding. It returns HTML text representing an HTML form that
 // can be sent presented to a browser to initiate the logout process.
-func (sp *ServiceProvider) MakePostLogoutRequest(nameID, relayState string) ([]byte, error) {
-	req, err := sp.MakeLogoutRequest(sp.GetSLOBindingLocation(HTTPPostBinding), nameID)
+func (sp *ServiceProvider) MakePostLogoutRequest(nameID, relayState, sessionIndex string) ([]byte, error) {
+	req, err := sp.MakeLogoutRequest(sp.GetSLOBindingLocation(HTTPPostBinding), nameID, sessionIndex)
 	if err != nil {
 		return nil, err
 	}

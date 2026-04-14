@@ -145,7 +145,7 @@ func TestRedirectRequestsEscapeRelayStateAndValidateDetachedSignature(t *testing
 	assert.NilError(t, err, "error parsing auth query: %s", err)
 	assert.NilError(t, s.validateQuerySig(authQuery), "error validating auth query: %s")
 
-	logoutRedirectURL, err := s.MakeRedirectLogoutRequest("ross@octolabs.io", relayState)
+	logoutRedirectURL, err := s.MakeRedirectLogoutRequest("ross@octolabs.io", relayState, "")
 	assert.NilError(t, err, "error creating logout redirect request: %s", err)
 	assert.Assert(t, strings.Contains(logoutRedirectURL.RawQuery, "RelayState="+url.QueryEscape(relayState)))
 	logoutQuery, err := url.ParseQuery(logoutRedirectURL.RawQuery)

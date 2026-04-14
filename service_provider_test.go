@@ -261,7 +261,7 @@ func TestSPCanProducePostRequest(t *testing.T) {
 	err := xml.Unmarshal(test.IDPMetadata, &s.IDPMetadata)
 	assert.Check(t, err)
 
-	form, err := s.MakePostAuthenticationRequest("relayState")
+	form, err := s.MakePostAuthenticationRequest("relayState", "")
 	assert.Check(t, err)
 	golden.Assert(t, string(form), t.Name()+"_form")
 }
@@ -334,7 +334,7 @@ func TestSPCanProduceSignedRequestPostBinding(t *testing.T) {
 	err := xml.Unmarshal(test.IDPMetadata, &s.IDPMetadata)
 	assert.Check(t, err)
 
-	htmlForm, err := s.MakePostAuthenticationRequest("relayState")
+	htmlForm, err := s.MakePostAuthenticationRequest("relayState", "")
 	assert.Check(t, err)
 	rgx := regexp.MustCompile(`\"SAMLRequest\" value=\"(.*?)\" /><input`)
 	rs := rgx.FindStringSubmatch(string(htmlForm))
@@ -383,7 +383,7 @@ func TestSPCanProducePostLogoutRequest(t *testing.T) {
 	err := xml.Unmarshal(test.IDPMetadata, &s.IDPMetadata)
 	assert.Check(t, err)
 
-	form, err := s.MakePostLogoutRequest("ros@octolabs.io", "relayState")
+	form, err := s.MakePostLogoutRequest("ros@octolabs.io", "relayState", "")
 	assert.Check(t, err)
 	golden.Assert(t, string(form), t.Name()+"_form")
 }
@@ -405,7 +405,7 @@ func TestSPCanProduceRedirectLogoutRequest(t *testing.T) {
 	err := xml.Unmarshal(test.IDPMetadata, &s.IDPMetadata)
 	assert.Check(t, err)
 
-	redirectURL, err := s.MakeRedirectLogoutRequest("ross@octolabs.io", "relayState")
+	redirectURL, err := s.MakeRedirectLogoutRequest("ross@octolabs.io", "relayState", "")
 	assert.Check(t, err)
 
 	decodedRequest, err := testsaml.ParseRedirectRequest(redirectURL)

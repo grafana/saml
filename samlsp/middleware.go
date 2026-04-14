@@ -186,7 +186,7 @@ func (m *Middleware) HandleStartAuthFlow(w http.ResponseWriter, r *http.Request)
 		w.Header().Add("Content-type", "text/html")
 		var buf bytes.Buffer
 		buf.WriteString(`<!DOCTYPE html><html><body>`)
-		buf.Write(authReq.Post(relayState))
+		buf.Write(authReq.Post(relayState, ""))
 		buf.WriteString(`</body></html>`)
 		if _, err := w.Write(buf.Bytes()); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
