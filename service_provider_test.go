@@ -1,8 +1,3 @@
-// SPDX-License-Identifier: BSD-2-Clause
-// Provenance-includes-location: https://github.com/crewjam/saml/blob/a32b643a25a46182499b1278293e265150056d89/service_provider_test.go
-// Provenance-includes-license: BSD-2-Clause
-// Provenance-includes-copyright: 2015-2023 Ross Kinder
-
 package saml
 
 import (
@@ -26,7 +21,7 @@ import (
 	"github.com/beevik/etree"
 	dsig "github.com/russellhaering/goxmldsig"
 
-	"github.com/grafana/saml/testsaml"
+	"github.com/crewjam/saml/testsaml"
 )
 
 type ServiceProviderTest struct {
@@ -266,28 +261,7 @@ func TestSPCanProducePostRequest(t *testing.T) {
 	err := xml.Unmarshal(test.IDPMetadata, &s.IDPMetadata)
 	assert.Check(t, err)
 
-	form, err := s.MakePostAuthenticationRequest("relayState", "")
-	assert.Check(t, err)
-	golden.Assert(t, string(form), t.Name()+"_form")
-}
-
-func TestSPCanProducePostRequestWithNonce(t *testing.T) {
-	test := NewServiceProviderTest(t)
-	TimeNow = func() time.Time {
-		rv, _ := time.Parse("Mon Jan 2 15:04:05 UTC 2006", "Mon Dec 1 01:31:21 UTC 2015")
-		return rv
-	}
-	s := ServiceProvider{
-		Key:         test.Key,
-		Certificate: test.Certificate,
-		MetadataURL: mustParseURL("https://15661444.ngrok.io/saml2/metadata"),
-		AcsURL:      mustParseURL("https://15661444.ngrok.io/saml2/acs"),
-		IDPMetadata: &EntityDescriptor{},
-	}
-	err := xml.Unmarshal(test.IDPMetadata, &s.IDPMetadata)
-	assert.Check(t, err)
-
-	form, err := s.MakePostAuthenticationRequest("relayState", "nonce-123")
+	form, err := s.MakePostAuthenticationRequest("relayState")
 	assert.Check(t, err)
 	golden.Assert(t, string(form), t.Name()+"_form")
 }
@@ -360,7 +334,7 @@ func TestSPCanProduceSignedRequestPostBinding(t *testing.T) {
 	err := xml.Unmarshal(test.IDPMetadata, &s.IDPMetadata)
 	assert.Check(t, err)
 
-	htmlForm, err := s.MakePostAuthenticationRequest("relayState", "nonce-123")
+	htmlForm, err := s.MakePostAuthenticationRequest("relayState")
 	assert.Check(t, err)
 	rgx := regexp.MustCompile(`\"SAMLRequest\" value=\"(.*?)\" /><input`)
 	rs := rgx.FindStringSubmatch(string(htmlForm))
@@ -394,19 +368,6 @@ func TestSPFailToProduceSignedRequestWithBogusSignatureMethod(t *testing.T) {
 }
 
 func TestSPCanProducePostLogoutRequest(t *testing.T) {
-	testCases := []struct {
-		name         string
-		sessionIndex string
-	}{
-		{
-			name: "TestSPCanProducePostLogoutRequest_NoSessionIndex",
-		},
-		{
-			name:         "TestSPCanProducePostLogoutRequest_SessionIndex",
-			sessionIndex: "session-123",
-		},
-	}
-
 	test := NewServiceProviderTest(t)
 	TimeNow = func() time.Time {
 		rv, _ := time.Parse("Mon Jan 2 15:04:05 UTC 2006", "Mon Dec 1 01:31:21 UTC 2015")
@@ -422,30 +383,12 @@ func TestSPCanProducePostLogoutRequest(t *testing.T) {
 	err := xml.Unmarshal(test.IDPMetadata, &s.IDPMetadata)
 	assert.Check(t, err)
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			RandReader = &testRandomReader{}
-			form, err := s.MakePostLogoutRequest("ros@octolabs.io", "relayState", tc.sessionIndex)
-			assert.Check(t, err)
-			golden.Assert(t, string(form), tc.name+"_form")
-		})
-	}
+	form, err := s.MakePostLogoutRequest("ros@octolabs.io", "relayState")
+	assert.Check(t, err)
+	golden.Assert(t, string(form), t.Name()+"_form")
 }
 
 func TestSPCanProduceRedirectLogoutRequest(t *testing.T) {
-	testCases := []struct {
-		name         string
-		sessionIndex string
-	}{
-		{
-			name: "TestSPCanProduceRedirectLogoutRequest_NoSessionIndex",
-		},
-		{
-			name:         "TestSPCanProduceRedirectLogoutRequest_SessionIndex",
-			sessionIndex: "session-123",
-		},
-	}
-
 	test := NewServiceProviderTest(t)
 	TimeNow = func() time.Time {
 		rv, _ := time.Parse("Mon Jan 2 15:04:05.999999999 UTC 2006", "Mon Dec 1 01:31:21.123456789 UTC 2015")
@@ -462,22 +405,16 @@ func TestSPCanProduceRedirectLogoutRequest(t *testing.T) {
 	err := xml.Unmarshal(test.IDPMetadata, &s.IDPMetadata)
 	assert.Check(t, err)
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			RandReader = &testRandomReader{}
+	redirectURL, err := s.MakeRedirectLogoutRequest("ross@octolabs.io", "relayState")
+	assert.Check(t, err)
 
-			redirectURL, err := s.MakeRedirectLogoutRequest("ross@octolabs.io", "relayState", tc.sessionIndex)
-			assert.Check(t, err)
-
-			decodedRequest, err := testsaml.ParseRedirectRequest(redirectURL)
-			assert.Check(t, err)
-			assert.Check(t, is.Equal("idp.testshib.org",
-				redirectURL.Host))
-			assert.Check(t, is.Equal("/idp/profile/SAML2/Redirect/SLO",
-				redirectURL.Path))
-			golden.Assert(t, string(decodedRequest), tc.name+"_decodedRequest")
-		})
-	}
+	decodedRequest, err := testsaml.ParseRedirectRequest(redirectURL)
+	assert.Check(t, err)
+	assert.Check(t, is.Equal("idp.testshib.org",
+		redirectURL.Host))
+	assert.Check(t, is.Equal("/idp/profile/SAML2/Redirect/SLO",
+		redirectURL.Path))
+	golden.Assert(t, string(decodedRequest), t.Name()+"_decodedRequest")
 }
 
 func TestSPCanProducePostLogoutResponse(t *testing.T) {
@@ -2099,29 +2036,4 @@ func TestSPInvalidResponses(t *testing.T) {
 
 	assert.Check(t, is.Error(err.(*InvalidResponseError).PrivateErr,
 		"cannot validate signature on Assertion: x509: malformed certificate"))
-}
-
-func TestResponseWithDefaultNamespace(t *testing.T) {
-	idpMetadata := golden.Get(t, "TestSPWithDefaultNamespace_idp_metadata")
-	respStr := golden.Get(t, "TestSPWithDefaultNamespace")
-	TimeNow = func() time.Time {
-		rv, _ := time.Parse("Mon Jan 2 15:04:05 MST 2006", "Fri Apr 21 13:12:51 UTC 2017")
-		return rv
-	}
-	Clock = dsig.NewFakeClockAt(TimeNow())
-	s := ServiceProvider{
-		Key:         mustParsePrivateKey(golden.Get(t, "key_2017.pem")).(*rsa.PrivateKey),
-		Certificate: mustParseCertificate(golden.Get(t, "cert_2017.pem")),
-		MetadataURL: mustParseURL("https://sp.example.com/saml2/metadata"),
-		AcsURL:      mustParseURL("https://sp.example.com/saml2/acs"),
-		IDPMetadata: &EntityDescriptor{},
-	}
-	err := xml.Unmarshal(idpMetadata, &s.IDPMetadata)
-	assert.NilError(t, err)
-
-	req := http.Request{PostForm: url.Values{}}
-	req.PostForm.Set("SAMLResponse", base64.StdEncoding.EncodeToString(respStr))
-	_, err = s.ParseResponse(&req, []string{"id-00020406080a0c0e10121416181a1c1e"})
-
-	assert.NilError(t, err)
 }

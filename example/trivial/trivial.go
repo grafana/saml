@@ -1,8 +1,3 @@
-// SPDX-License-Identifier: BSD-2-Clause
-// Provenance-includes-location: https://github.com/crewjam/saml/blob/a32b643a25a46182499b1278293e265150056d89/example/trivial/trivial.go
-// Provenance-includes-license: BSD-2-Clause
-// Provenance-includes-copyright: 2015-2023 Ross Kinder
-
 // Package main contains an example service provider implementation.
 package main
 
@@ -17,7 +12,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/grafana/saml/samlsp"
+	"github.com/crewjam/saml/samlsp"
 )
 
 var samlMiddleware *samlsp.Middleware
@@ -28,7 +23,7 @@ func hello(w http.ResponseWriter, r *http.Request) {
 
 func logout(w http.ResponseWriter, r *http.Request) {
 	nameID := samlsp.AttributeFromContext(r.Context(), "urn:oasis:names:tc:SAML:attribute:subject-id")
-	url, err := samlMiddleware.ServiceProvider.MakeRedirectLogoutRequest(nameID, "", "")
+	url, err := samlMiddleware.ServiceProvider.MakeRedirectLogoutRequest(nameID, "")
 	if err != nil {
 		panic(err) // TODO handle error
 	}

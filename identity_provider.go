@@ -1,8 +1,3 @@
-// SPDX-License-Identifier: BSD-2-Clause
-// Provenance-includes-location: https://github.com/crewjam/saml/blob/a32b643a25a46182499b1278293e265150056d89/identity_provider.go
-// Provenance-includes-license: BSD-2-Clause
-// Provenance-includes-copyright: 2015-2023 Ross Kinder
-
 package saml
 
 import (
@@ -26,8 +21,8 @@ import (
 	xrv "github.com/mattermost/xml-roundtrip-validator"
 	dsig "github.com/russellhaering/goxmldsig"
 
-	"github.com/grafana/saml/logger"
-	"github.com/grafana/saml/xmlenc"
+	"github.com/crewjam/saml/logger"
+	"github.com/crewjam/saml/xmlenc"
 )
 
 // Session represents a user session. It is returned by the
@@ -137,8 +132,6 @@ func (idp *IdentityProvider) Metadata() *EntityDescriptor {
 				SSODescriptor: SSODescriptor{
 					RoleDescriptor: RoleDescriptor{
 						ProtocolSupportEnumeration: "urn:oasis:names:tc:SAML:2.0:protocol",
-						CacheDuration:              validDuration,
-						ValidUntil:                 TimeNow().Add(validDuration),
 						KeyDescriptors: []KeyDescriptor{
 							{
 								Use: "signing",

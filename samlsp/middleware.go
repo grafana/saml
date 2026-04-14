@@ -1,8 +1,3 @@
-// SPDX-License-Identifier: BSD-2-Clause
-// Provenance-includes-location: https://github.com/crewjam/saml/blob/a32b643a25a46182499b1278293e265150056d89/samlsp/middleware.go
-// Provenance-includes-license: BSD-2-Clause
-// Provenance-includes-copyright: 2015-2023 Ross Kinder
-
 package samlsp
 
 import (
@@ -10,7 +5,7 @@ import (
 	"encoding/xml"
 	"net/http"
 
-	"github.com/grafana/saml"
+	"github.com/crewjam/saml"
 )
 
 // Middleware implements middleware than allows a web application
@@ -191,7 +186,7 @@ func (m *Middleware) HandleStartAuthFlow(w http.ResponseWriter, r *http.Request)
 		w.Header().Add("Content-type", "text/html")
 		var buf bytes.Buffer
 		buf.WriteString(`<!DOCTYPE html><html><body>`)
-		buf.Write(authReq.Post(relayState, ""))
+		buf.Write(authReq.Post(relayState))
 		buf.WriteString(`</body></html>`)
 		if _, err := w.Write(buf.Bytes()); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

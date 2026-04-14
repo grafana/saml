@@ -1,8 +1,3 @@
-// SPDX-License-Identifier: BSD-2-Clause
-// Provenance-includes-location: https://github.com/crewjam/saml/blob/a32b643a25a46182499b1278293e265150056d89/schema.go
-// Provenance-includes-license: BSD-2-Clause
-// Provenance-includes-copyright: 2015-2023 Ross Kinder
-
 package saml
 
 import (
@@ -657,7 +652,7 @@ const (
 	StatusNoAvailableIDP = "urn:oasis:names:tc:SAML:2.0:status:NoAvailableIDP"
 
 	// StatusNoPassive means Indicates the responding provider cannot authenticate the principal passively, as has been requested.
-	StatusNoPassive = "urn:oasis:names:tc:SAML:2.0:status:NoPassive" // #nosec G101
+	StatusNoPassive = "urn:oasis:names:tc:SAML:2.0:status:NoPassive" //nolint:gosec
 
 	// StatusNoSupportedIDP is used by an intermediary to indicate that none of the identity providers in an <IDPList> are supported by the intermediary.
 	StatusNoSupportedIDP = "urn:oasis:names:tc:SAML:2.0:status:NoSupportedIDP"
@@ -675,7 +670,7 @@ const (
 	StatusRequestUnsupported = "urn:oasis:names:tc:SAML:2.0:status:RequestUnsupported"
 
 	// StatusRequestVersionDeprecated means the SAML responder cannot process any requests with the protocol version specified in the request.
-	StatusRequestVersionDeprecated = "urn:oasis:names:tc:SAML:2.0:status:RequestVersionDeprecated" // #nosec G101
+	StatusRequestVersionDeprecated = "urn:oasis:names:tc:SAML:2.0:status:RequestVersionDeprecated" //nolint:gosec
 
 	// StatusRequestVersionTooHigh means the SAML responder cannot process the request because the protocol version specified in the request message is a major upgrade from the highest protocol version supported by the responder.
 	StatusRequestVersionTooHigh = "urn:oasis:names:tc:SAML:2.0:status:RequestVersionTooHigh"
