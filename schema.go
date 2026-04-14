@@ -355,7 +355,7 @@ func (r *ArtifactResolve) Element() *etree.Element {
 	}
 	if r.Signature != nil {
 		// ADFS requires that <Signature> come before <Artifact>.
-		// ref: https://github.com/crewjam/saml/issues/535
+		// ref: https://github.com/grafana/saml/issues/535
 		// ref: https://www.wiktorzychla.com/2017/09/adfs-and-saml2-artifact-binding-woes.html
 		el.AddChild(r.Signature)
 	}

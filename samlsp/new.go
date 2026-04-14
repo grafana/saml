@@ -13,7 +13,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	dsig "github.com/russellhaering/goxmldsig"
 
-	"github.com/crewjam/saml"
+	"github.com/grafana/saml"
 )
 
 // Options represents the parameters for creating a new middleware
