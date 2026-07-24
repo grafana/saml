@@ -984,6 +984,13 @@ func TestSPCanParseResponse(t *testing.T) {
 			},
 		},
 	}, assertion.AttributeStatements[0].Attributes))
+
+	// AllowIDPInitiated being set must not break a normal SP-initiated login.
+	s.AllowIDPInitiated = true
+	req = http.Request{PostForm: url.Values{}}
+	req.PostForm.Set("SAMLResponse", base64.StdEncoding.EncodeToString(test.SamlResponse))
+	_, err = s.ParseResponse(&req, []string{"id-9e61753d64e928af5a7a341a97f420c9"})
+	assert.Check(t, err)
 }
 
 func (test *ServiceProviderTest) replaceDestination(newDestination string) {
@@ -1228,6 +1235,30 @@ func TestSPInvalidAssertions(t *testing.T) {
 	assertion.Conditions.AudienceRestrictions = []AudienceRestriction{}
 	err = s.validateAssertion(&assertion, []string{"id-9e61753d64e928af5a7a341a97f420c9"}, TimeNow())
 	assert.Check(t, err)
+	assertion = Assertion{}
+	assert.Check(t, xml.Unmarshal(assertionBuf, &assertion))
+
+	// With AllowIDPInitiated, empty InResponseTo should be accepted
+	s.AllowIDPInitiated = true
+	assertion.Subject.SubjectConfirmations[0].SubjectConfirmationData.InResponseTo = ""
+	err = s.validateAssertion(&assertion, []string{""}, TimeNow())
+	assert.Check(t, err)
+	assertion = Assertion{}
+	assert.Check(t, xml.Unmarshal(assertionBuf, &assertion))
+
+	// With AllowIDPInitiated, non-empty InResponseTo that doesn't match should be rejected
+	s.AllowIDPInitiated = true
+	assertion.Subject.SubjectConfirmations[0].SubjectConfirmationData.InResponseTo = "wrong-request-id"
+	err = s.validateAssertion(&assertion, []string{"", "id-9e61753d64e928af5a7a341a97f420c9"}, TimeNow())
+	assert.Check(t, is.Error(err, "assertion SubjectConfirmation one of the possible request IDs ([ id-9e61753d64e928af5a7a341a97f420c9])"))
+	assertion = Assertion{}
+	assert.Check(t, xml.Unmarshal(assertionBuf, &assertion))
+
+	// With AllowIDPInitiated, matching InResponseTo should still be accepted
+	s.AllowIDPInitiated = true
+	err = s.validateAssertion(&assertion, []string{"", "id-9e61753d64e928af5a7a341a97f420c9"}, TimeNow())
+	assert.Check(t, err)
+	s.AllowIDPInitiated = false
 }
 
 func TestXswPermutationOneIsRejected(t *testing.T) {
@@ -1987,6 +2018,15 @@ func TestSPInvalidResponses(t *testing.T) {
 	_, err = s.ParseResponse(&req, []string{"wrongRequestID"})
 	assert.Check(t, is.Error(err.(*InvalidResponseError).PrivateErr,
 		"`InResponseTo` does not match any of the possible request IDs (expected [wrongRequestID])"))
+
+	// An InResponseTo that does not match a tracked request ID must be
+	// rejected even when AllowIDPInitiated is set
+	s.AllowIDPInitiated = true
+	req.PostForm.Set("SAMLResponse", base64.StdEncoding.EncodeToString(test.SamlResponse))
+	_, err = s.ParseResponse(&req, []string{"wrongRequestID"})
+	assert.Check(t, is.Error(err.(*InvalidResponseError).PrivateErr,
+		"`InResponseTo` does not match any of the possible request IDs (expected [wrongRequestID])"))
+	s.AllowIDPInitiated = false
 
 	TimeNow = func() time.Time {
 		rv, _ := time.Parse("Mon Jan 2 15:04:05 MST 2006", "Mon Nov 30 20:57:09 UTC 2016")
