@@ -9,9 +9,12 @@ import (
 	"crypto/rsa"
 	"encoding/base64"
 	"encoding/xml"
+	"errors"
 	"net/url"
 	"testing"
+	"time"
 
+	"github.com/beevik/etree"
 	dsig "github.com/russellhaering/goxmldsig"
 	"gotest.tools/assert"
 	"gotest.tools/golden"
@@ -122,4 +125,114 @@ func TestInvalidSignatureAlgorithm(t *testing.T) {
 
 	err = s.validateQuerySig(query)
 	assert.Error(t, err, "unsupported signature algorithm: http://www.w3.org/2000/09/xmldsig#rsa-sha384")
+}
+
+// newSLOTestServiceProvider returns a ServiceProvider whose signing key/cert
+// matches the signing certificate advertised in the IDP metadata, so that
+// LogoutRequests signed with the SP key validate against the IDP metadata.
+// The clock is pinned to a time within idp_cert.pem's validity window
+// (Oct 2013 - Oct 2014) so enveloped-signature cert validation passes.
+func newSLOTestServiceProvider(t *testing.T) *ServiceProvider {
+	TimeNow = func() time.Time {
+		return time.Date(2014, time.January, 1, 0, 0, 0, 0, time.UTC)
+	}
+	Clock = dsig.NewFakeClockAt(TimeNow())
+
+	s := &ServiceProvider{
+		Key:             mustParsePrivateKey(golden.Get(t, "idp_key.pem")).(*rsa.PrivateKey),
+		Certificate:     mustParseCertificate(golden.Get(t, "idp_cert.pem")),
+		MetadataURL:     mustParseURL("https://15661444.ngrok.io/saml2/metadata"),
+		AcsURL:          mustParseURL("https://15661444.ngrok.io/saml2/acs"),
+		SloURL:          mustParseURL("https://15661444.ngrok.io/saml2/slo"),
+		SignatureMethod: dsig.RSASHA1SignatureMethod,
+	}
+	err := xml.Unmarshal(golden.Get(t, "SP_IDPMetadata_signing"), &s.IDPMetadata)
+	assert.NilError(t, err)
+	return s
+}
+
+// encodeLogoutRequest serializes a LogoutRequest to the base64-encoded form
+// value expected by ParseLogoutRequestForm (HTTP-POST binding).
+func encodeLogoutRequest(t *testing.T, r *LogoutRequest) string {
+	doc := etree.NewDocument()
+	doc.SetRoot(r.Element())
+	buf, err := doc.WriteToBytes()
+	assert.NilError(t, err)
+	return base64.StdEncoding.EncodeToString(buf)
+}
+
+// A LogoutRequest signed by the IDP must be accepted and parsed.
+func TestSPParseLogoutRequestFormValidSignature(t *testing.T) {
+	s := newSLOTestServiceProvider(t)
+
+	req, err := s.MakeLogoutRequest(s.SloURL.String(), "user@example.com", "session-123")
+	assert.NilError(t, err)
+	assert.Check(t, req.Signature != nil, "expected request to be signed")
+
+	parsed, err := s.ParseLogoutRequestForm(encodeLogoutRequest(t, req))
+	assert.NilError(t, err)
+	assert.Equal(t, "user@example.com", parsed.NameID.Value)
+	assert.Equal(t, "session-123", parsed.SessionIndex.Value)
+}
+
+// An unsigned LogoutRequest must be rejected when the IDP metadata advertises a
+// signing certificate. This is the core of the fix: unsigned requests are no
+// longer trusted.
+func TestSPParseLogoutRequestFormUnsignedRejected(t *testing.T) {
+	s := newSLOTestServiceProvider(t)
+
+	// Build an unsigned request using an SP without a SignatureMethod.
+	unsignedSP := *s
+	unsignedSP.SignatureMethod = ""
+	req, err := unsignedSP.MakeLogoutRequest(s.SloURL.String(), "user@example.com", "")
+	assert.NilError(t, err)
+	assert.Check(t, req.Signature == nil, "expected request to be unsigned")
+
+	_, err = s.ParseLogoutRequestForm(encodeLogoutRequest(t, req))
+	assert.Check(t, err != nil, "expected unsigned request to be rejected")
+
+	var ivr *InvalidResponseError
+	assert.Check(t, errors.As(err, &ivr), "expected InvalidResponseError, got %T", err)
+	assert.Check(t, errors.Is(ivr.PrivateErr, errSignatureElementNotPresent),
+		"expected missing-signature error, got %v", ivr.PrivateErr)
+}
+
+// A LogoutRequest whose contents are altered after signing must be rejected.
+func TestSPParseLogoutRequestFormTamperedRejected(t *testing.T) {
+	s := newSLOTestServiceProvider(t)
+
+	req, err := s.MakeLogoutRequest(s.SloURL.String(), "user@example.com", "session-123")
+	assert.NilError(t, err)
+
+	// Tamper with the NameID after the signature was computed.
+	doc := etree.NewDocument()
+	doc.SetRoot(req.Element())
+	nameIDEl := doc.Root().FindElement("//NameID")
+	assert.Check(t, nameIDEl != nil, "expected NameID element")
+	nameIDEl.SetText("attacker@example.com")
+	buf, err := doc.WriteToBytes()
+	assert.NilError(t, err)
+
+	_, err = s.ParseLogoutRequestForm(base64.StdEncoding.EncodeToString(buf))
+	assert.Check(t, err != nil, "expected tampered request to be rejected")
+}
+
+// When the IDP metadata advertises no signing certificate, signature validation
+// is skipped and an unsigned request is accepted.
+func TestSPParseLogoutRequestFormNoSigningCertSkipsValidation(t *testing.T) {
+	s := newSLOTestServiceProvider(t)
+
+	req, err := s.MakeLogoutRequest(s.SloURL.String(), "user@example.com", "")
+	assert.NilError(t, err)
+	req.Signature = nil // ensure the request is unsigned
+
+	// Replace the metadata with one that has no signing certificate.
+	noCertSP := *s
+	noCertSP.IDPMetadata = &EntityDescriptor{}
+	_, err = noCertSP.getIDPSigningCerts()
+	assert.Check(t, errors.Is(err, errNoIDPSigningCert), "expected no-signing-cert metadata")
+
+	parsed, err := noCertSP.ParseLogoutRequestForm(encodeLogoutRequest(t, req))
+	assert.NilError(t, err)
+	assert.Equal(t, "user@example.com", parsed.NameID.Value)
 }
