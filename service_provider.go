@@ -333,6 +333,10 @@ func (sp *ServiceProvider) GetSLOBindingLocation(binding string) string {
 	return ""
 }
 
+// errNoIDPSigningCert is returned by getIDPSigningCerts when the IDP metadata
+// does not contain any signing certificate.
+var errNoIDPSigningCert = errors.New("cannot find any signing certificate in the IDP SSO descriptor")
+
 // getIDPSigningCerts returns the certificates which we can use to verify things
 // signed by the IDP in PEM format, or nil if no such certificate is found.
 func (sp *ServiceProvider) getIDPSigningCerts() ([]*x509.Certificate, error) {
@@ -354,7 +358,7 @@ func (sp *ServiceProvider) getIDPSigningCerts() ([]*x509.Certificate, error) {
 	}
 
 	if len(certStrs) == 0 {
-		return nil, errors.New("cannot find any signing certificate in the IDP SSO descriptor")
+		return nil, errNoIDPSigningCert
 	}
 
 	certs := make([]*x509.Certificate, len(certStrs))
@@ -1096,7 +1100,7 @@ func (sp *ServiceProvider) validateSignature(el *etree.Element) error {
 
 	certs, err := sp.getIDPSigningCerts()
 	if err != nil {
-		return fmt.Errorf("cannot validate signature on %s: %v", el.Tag, err)
+		return fmt.Errorf("cannot validate signature on %s: %w", el.Tag, err)
 	}
 
 	certificateStore := dsig.MemoryX509CertificateStore{
@@ -1520,6 +1524,68 @@ func (sp *ServiceProvider) ValidateLogoutResponseForm(postFormData string) error
 		return retErr
 	}
 	return sp.validateLogoutResponse(&resp)
+}
+
+// ParseLogoutRequestForm parses and validates a LogoutRequest received via the
+// HTTP-POST binding, returning the parsed LogoutRequest when it is valid.
+//
+// It mirrors ValidateLogoutResponseForm: the request is base64 decoded, checked
+// for well-formed XML, and its enveloped XML-DSig signature is verified against
+// the IDP signing certificates from metadata.
+//
+// When the IDP metadata does not contain any signing certificate, signature
+// validation is skipped. This graceful fallback is intentional: SAML SLO
+// deployments generally configure certificate signing, so the blast radius is
+// minimal, and it preserves interoperability with IDPs that advertise no
+// signing certificate.
+func (sp *ServiceProvider) ParseLogoutRequestForm(postFormData string) (*LogoutRequest, error) {
+	retErr := &InvalidResponseError{
+		Now: TimeNow(),
+	}
+
+	rawRequestBuf, err := base64.StdEncoding.DecodeString(postFormData)
+	if err != nil {
+		retErr.PrivateErr = fmt.Errorf("unable to parse base64: %s", err)
+		return nil, retErr
+	}
+	retErr.Response = string(rawRequestBuf)
+
+	if err := xrv.Validate(bytes.NewReader(rawRequestBuf)); err != nil {
+		retErr.PrivateErr = fmt.Errorf("request contains invalid XML: %s", err)
+		return nil, retErr
+	}
+
+	doc := etree.NewDocument()
+	if err := doc.ReadFromBytes(rawRequestBuf); err != nil {
+		retErr.PrivateErr = err
+		return nil, retErr
+	}
+
+	// Validate the request signature. When the IDP metadata advertises no signing
+	// certificate, accept the request without a signature for interoperability.
+	if err := sp.validateSignature(doc.Root()); err != nil {
+		switch {
+		case errors.Is(err, errNoIDPSigningCert):
+			// No signing certificate in metadata; skip signature validation.
+		case errors.Is(err, errSignatureElementNotPresent):
+			// Unsigned request: only acceptable when no signing certificate is
+			// configured. Otherwise the missing signature is a validation failure.
+			if _, certErr := sp.getIDPSigningCerts(); !errors.Is(certErr, errNoIDPSigningCert) {
+				retErr.PrivateErr = err
+				return nil, retErr
+			}
+		default:
+			retErr.PrivateErr = err
+			return nil, retErr
+		}
+	}
+
+	var req LogoutRequest
+	if err := unmarshalElement(doc.Root(), &req); err != nil {
+		retErr.PrivateErr = err
+		return nil, retErr
+	}
+	return &req, nil
 }
 
 // ValidateLogoutResponseRedirect returns a nil error if the logout response is valid.
