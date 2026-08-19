@@ -1561,19 +1561,20 @@ func (sp *ServiceProvider) ParseLogoutRequestForm(postFormData string) (*LogoutR
 		return nil, retErr
 	}
 
-	// Validate signature when possible. If metadata advertises no signing cert,
-	// accept requests without a signature for interoperability.
+	// Validate the request signature. When the IDP metadata advertises no signing
+	// certificate, accept the request without a signature for interoperability.
 	if err := sp.validateSignature(doc.Root()); err != nil {
-		if errors.Is(err, errNoIDPSigningCert) {
-			// no signing cert in metadata; skip signature validation
-		} else if errors.Is(err, errSignatureElementNotPresent) {
-			if _, certErr := sp.getIDPSigningCerts(); errors.Is(certErr, errNoIDPSigningCert) {
-				// no signing cert in metadata; skip signature validation
-			} else {
+		switch {
+		case errors.Is(err, errNoIDPSigningCert):
+			// No signing certificate in metadata; skip signature validation.
+		case errors.Is(err, errSignatureElementNotPresent):
+			// Unsigned request: only acceptable when no signing certificate is
+			// configured. Otherwise the missing signature is a validation failure.
+			if _, certErr := sp.getIDPSigningCerts(); !errors.Is(certErr, errNoIDPSigningCert) {
 				retErr.PrivateErr = err
 				return nil, retErr
 			}
-		} else {
+		default:
 			retErr.PrivateErr = err
 			return nil, retErr
 		}
