@@ -133,11 +133,17 @@ func TestInvalidSignatureAlgorithm(t *testing.T) {
 // The clock is pinned to a time within idp_cert.pem's validity window
 // (Oct 2013 - Oct 2014) so enveloped-signature cert validation passes.
 func newSLOTestServiceProvider(t *testing.T) *ServiceProvider {
+	prevTimeNow := TimeNow
+	prevClock := Clock
+	t.Cleanup(func() {
+		TimeNow = prevTimeNow
+		Clock = prevClock
+	})
+
 	TimeNow = func() time.Time {
 		return time.Date(2014, time.January, 1, 0, 0, 0, 0, time.UTC)
 	}
 	Clock = dsig.NewFakeClockAt(TimeNow())
-
 	s := &ServiceProvider{
 		Key:             mustParsePrivateKey(golden.Get(t, "idp_key.pem")).(*rsa.PrivateKey),
 		Certificate:     mustParseCertificate(golden.Get(t, "idp_cert.pem")),
@@ -176,8 +182,7 @@ func TestSPParseLogoutRequestFormValidSignature(t *testing.T) {
 }
 
 // An unsigned LogoutRequest must be rejected when the IDP metadata advertises a
-// signing certificate. This is the core of the fix: unsigned requests are no
-// longer trusted.
+// signing certificate.
 func TestSPParseLogoutRequestFormUnsignedRejected(t *testing.T) {
 	s := newSLOTestServiceProvider(t)
 
