@@ -1088,6 +1088,24 @@ func (sp *ServiceProvider) validateAssertion(assertion *Assertion, possibleReque
 
 var errSignatureElementNotPresent = errors.New("signature element not present")
 
+// unboundedParentContext is like etreeutils.NSBuildParentContext, but starts from
+// EmptyNSContext to skip the default context's 1000-node traversal budget (GHSA-qhrp-hfff-vphr).
+// That budget is meant for SignedInfo canonicalization, not for detaching a whole
+// Response/Assertion, which can legitimately have far more nodes (e.g. a large "groups" attribute).
+func unboundedParentContext(el *etree.Element) (etreeutils.NSContext, error) {
+	parent := el.Parent()
+	if parent == nil {
+		return etreeutils.EmptyNSContext, nil
+	}
+
+	ctx, err := unboundedParentContext(parent)
+	if err != nil {
+		return ctx, err
+	}
+
+	return ctx.SubContext(parent)
+}
+
 // validateSignature returns nil iff the Signature embedded in the element is valid
 func (sp *ServiceProvider) validateSignature(el *etree.Element) error {
 	sigEl, err := findChild(el, "http://www.w3.org/2000/09/xmldsig#", "Signature")
@@ -1098,9 +1116,11 @@ func (sp *ServiceProvider) validateSignature(el *etree.Element) error {
 		return errSignatureElementNotPresent
 	}
 
+	tag := el.Tag
+
 	certs, err := sp.getIDPSigningCerts()
 	if err != nil {
-		return fmt.Errorf("cannot validate signature on %s: %w", el.Tag, err)
+		return fmt.Errorf("cannot validate signature on %s: %w", tag, err)
 	}
 
 	certificateStore := dsig.MemoryX509CertificateStore{
@@ -1130,17 +1150,17 @@ func (sp *ServiceProvider) validateSignature(el *etree.Element) error {
 		}
 	}
 
-	ctx, err := etreeutils.NSBuildParentContext(el)
+	ctx, err := unboundedParentContext(el)
 	if err != nil {
-		return fmt.Errorf("cannot validate signature on %s: %v", el.Tag, err)
+		return fmt.Errorf("cannot validate signature on %s: %v", tag, err)
 	}
 	ctx, err = ctx.SubContext(el)
 	if err != nil {
-		return fmt.Errorf("cannot validate signature on %s: %v", el.Tag, err)
+		return fmt.Errorf("cannot validate signature on %s: %v", tag, err)
 	}
 	el, err = etreeutils.NSDetatch(ctx, el)
 	if err != nil {
-		return fmt.Errorf("cannot validate signature on %s: %v", el.Tag, err)
+		return fmt.Errorf("cannot validate signature on %s: %v", tag, err)
 	}
 
 	if sp.SignatureVerifier != nil {
@@ -1148,7 +1168,7 @@ func (sp *ServiceProvider) validateSignature(el *etree.Element) error {
 	}
 
 	if _, err := validationContext.Validate(el); err != nil {
-		return fmt.Errorf("cannot validate signature on %s: %v", el.Tag, err)
+		return fmt.Errorf("cannot validate signature on %s: %v", tag, err)
 	}
 
 	return nil

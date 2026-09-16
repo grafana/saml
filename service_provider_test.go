@@ -25,6 +25,7 @@ import (
 
 	"github.com/beevik/etree"
 	dsig "github.com/russellhaering/goxmldsig"
+	"github.com/russellhaering/goxmldsig/etreeutils"
 
 	"github.com/grafana/saml/testsaml"
 )
@@ -1146,6 +1147,37 @@ func TestSPMissingDestinationWithSignaturePresent(t *testing.T) {
 		"`Destination` does not match AcsURL (expected \"https://15661444.ngrok.io/saml2/acs\", actual \"\")"))
 }
 
+// TestUnboundedParentContextBypassesTraversalLimit checks that unboundedParentContext
+// lets validateSignature detach large Response/Assertion elements (e.g. a big "groups"
+// attribute) despite goxmldsig's 1000-node traversal budget (GHSA-qhrp-hfff-vphr).
+func TestUnboundedParentContextBypassesTraversalLimit(t *testing.T) {
+	buildLargeElement := func() *etree.Element {
+		root := etree.NewElement("Root")
+		el := root.CreateElement("Response")
+		// Comfortably over the default 1000-node traversal limit.
+		for i := 0; i < 1500; i++ {
+			el.CreateElement("Attribute")
+		}
+		return el
+	}
+
+	// Sanity check: the default, bounded context does hit the limit for a tree this size -
+	// otherwise this test would not be exercising the code path it claims to.
+	el := buildLargeElement()
+	defaultCtx, err := etreeutils.NSBuildParentContext(el)
+	assert.Check(t, err)
+	_, err = etreeutils.NSDetatch(defaultCtx, el)
+	assert.Check(t, is.Error(err, etreeutils.ErrTraversalLimit.Error()))
+
+	// The fix: the same tree, detached via unboundedParentContext, must succeed.
+	el = buildLargeElement()
+	ctx, err := unboundedParentContext(el)
+	assert.Check(t, err)
+	detached, err := etreeutils.NSDetatch(ctx, el)
+	assert.Check(t, err)
+	assert.Check(t, detached != nil)
+}
+
 func TestSPInvalidAssertions(t *testing.T) {
 	test := NewServiceProviderTest(t)
 	s := ServiceProvider{
@@ -1459,7 +1491,7 @@ func TestXswPermutationSevenIsRejected(t *testing.T) {
 	_, err = s.ParseResponse(&req, []string{"ONELOGIN_4fee3b046395c4e751011e97f8900b5273d56685"})
 	// It's the assertion signature that can't be verified. The error message is generic and always mentions Response
 	assert.Check(t, is.Error(err.(*InvalidResponseError).PrivateErr,
-		"cannot validate signature on Assertion: Signature could not be verified"))
+		"cannot validate signature on Assertion: crypto/rsa: verification error"))
 }
 
 func TestXswPermutationEightIsRejected(t *testing.T) {
@@ -1490,7 +1522,7 @@ func TestXswPermutationEightIsRejected(t *testing.T) {
 	_, err = s.ParseResponse(&req, []string{"ONELOGIN_4fee3b046395c4e751011e97f8900b5273d56685"})
 	// It's the assertion signature that can't be verified. The error message is generic and always mentions Response
 	assert.Check(t, is.Error(err.(*InvalidResponseError).PrivateErr,
-		"cannot validate signature on Assertion: Signature could not be verified"))
+		"cannot validate signature on Assertion: crypto/rsa: verification error"))
 }
 
 func TestXswPermutationNineIsRejected(t *testing.T) {
